@@ -282,9 +282,9 @@ struct BoundaryScanRecord : public core::LogRecord {
  */
 struct BsOpenRecord : public core::LogRecord {
     string first_device_name;
-    int    first_device_pin;
+    string first_device_pin;
     string second_device_name;
-    optional<int>    second_device_pin;
+    string second_device_pin;
 
     BsOpenRecord()
       : LogRecord(enums::LogRecordPrefix::BS_O) {}

@@ -254,17 +254,18 @@ json BsShortRecord::toJson() const {
 // ===================== BsOpenRecord =====================
 void BsOpenRecord::fromFields(const vector<string>& fields) {
     if (fields.size() > 0) first_device_name = fields[0];
-    if (fields.size() > 1) first_device_pin = core::safeStoi(fields[1], "first_device_pin", "@BS-O");
+    if (fields.size() > 1) first_device_pin = fields[1];
     if (fields.size() > 2) second_device_name = fields[2];
     else second_device_name = "";
-    if (fields.size() > 3) second_device_pin = core::safeStoiOptional(fields[3], "second_device_pin", "@BS-O");
+    if (fields.size() > 3) second_device_pin = fields[3];
+    else second_device_pin = "";
 }
 json BsOpenRecord::toJson() const {
     json j = LogRecord::toJson();
     j[JSON_KEY_FIRST_DEVICE_NAME]  = first_device_name;
     j[JSON_KEY_FIRST_DEVICE_PIN]   = first_device_pin;
-    j[JSON_KEY_SECOND_DEVICE_NAME] = second_device_name == "" ? json(second_device_name) : json(nullptr);;
-    j[JSON_KEY_SECOND_DEVICE_PIN]  = second_device_pin.has_value() ? json(*second_device_pin) : json(nullptr);
+    j[JSON_KEY_SECOND_DEVICE_NAME] = second_device_name == "" ? json(second_device_name) : json(nullptr);
+    j[JSON_KEY_SECOND_DEVICE_PIN]  = second_device_pin  == "" ? json(second_device_pin)  : json(nullptr);
     return j;
 }
 
