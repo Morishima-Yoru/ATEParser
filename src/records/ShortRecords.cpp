@@ -26,15 +26,13 @@ namespace records {
 // ========================= ShortsTestRecord =========================
 
 void ShortsTestRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) test_status = static_cast<enums::GenericTestStatus>(core::safeStoi(fields[0], "test_status", "@TS", 0));
-    if (fields.size() > 2) shorts_count = core::safeStoi(fields[1], "shorts_count", "@TS", 0);
-    if (fields.size() > 3) opens_count = core::safeStoi(fields[2], "opens_count", "@TS", 0);
-    if (fields.size() > 4) phantoms_count = core::safeStoi(fields[3], "phantoms_count", "@TS", 0);
-    if (fields.size() > 5 && !fields[4].empty()) {
-        designator = fields[4];
-        designator->erase(remove(designator->begin(), designator->end(), '\r'), designator->end());
-        designator->erase(remove(designator->begin(), designator->end(), '\n'), designator->end());
-    }
+    if (fields.size() > 0) test_status = static_cast<enums::GenericTestStatus>(core::safeStoi(fields[0], "test_status", "@TS", 0));
+    if (fields.size() > 1) shorts_count = core::safeStoi(fields[1], "shorts_count", "@TS", 0);
+    if (fields.size() > 2) opens_count = core::safeStoi(fields[2], "opens_count", "@TS", 0);
+    if (fields.size() > 3) phantoms_count = core::safeStoi(fields[3], "phantoms_count", "@TS", 0);
+    if (fields.size() > 4) designator = fields[4];
+    designator.erase(remove(designator.begin(), designator.end(), '\r'), designator.end());
+    designator.erase(remove(designator.begin(), designator.end(), '\n'), designator.end());
 }
 
 nlohmann::json ShortsTestRecord::toJson() const {
@@ -43,16 +41,16 @@ nlohmann::json ShortsTestRecord::toJson() const {
     j[JSON_KEY_SHORTS_COUNT] = shorts_count;
     j[JSON_KEY_OPENS_COUNT] = opens_count;
     j[JSON_KEY_PHANTOMS_COUNT] = phantoms_count;
-    if (designator.has_value()) j[JSON_KEY_DESIGNATOR] = designator.value();
+    j[JSON_KEY_DESIGNATOR] = designator == "" ? json(nullptr) : json(designator);
     return j;
 }
 
 // ========================= TsSourceRecord =========================
 
 void TsSourceRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) shorts_count = core::safeStoi(fields[0], "shorts_count", "@TS-S", 0);
-    if (fields.size() > 2) phantoms_count = core::safeStoi(fields[1], "phantoms_count", "@TS-S", 0);
-    if (fields.size() > 3) source_node = fields[2];
+    if (fields.size() > 0) shorts_count = core::safeStoi(fields[0], "shorts_count", "@TS-S", 0);
+    if (fields.size() > 1) phantoms_count = core::safeStoi(fields[1], "phantoms_count", "@TS-S", 0);
+    if (fields.size() > 2) source_node = fields[2];
     source_node.erase(remove(source_node.begin(), source_node.end(), '\r'), source_node.end());
     source_node.erase(remove(source_node.begin(), source_node.end(), '\n'), source_node.end());
 }
@@ -77,7 +75,7 @@ void TsDestinationRecord::fromFields(const vector<string>& fields) {
 nlohmann::json TsDestinationRecord::toJson() const {
     nlohmann::json arr = nlohmann::json::array();
     for (auto& p : destination_list) {
-        arr.push_back({{JSON_KEY_NODE, p.first}, {JSON_KEY_DEVIATION, p.second}});
+        arr.push_back({p.first, p.second});
     }
     nlohmann::json j = LogRecord::toJson();
     j[JSON_KEY_DESTINATIONS_LIST] = arr;
@@ -87,9 +85,9 @@ nlohmann::json TsDestinationRecord::toJson() const {
 // ========================= TsOpenRecord =========================
 
 void TsOpenRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) source_node = fields[1];
-    if (fields.size() > 2) destination_node = fields[2];
-    if (fields.size() > 3) deviation = core::safeStodOptional(fields[3], "deviation", "@TS-O");
+    if (fields.size() > 0) source_node = fields[0];
+    if (fields.size() > 1) destination_node = fields[1];
+    if (fields.size() > 2) deviation = core::safeStodOptional(fields[2], "deviation", "@TS-O");
 }
 
 nlohmann::json TsOpenRecord::toJson() const {

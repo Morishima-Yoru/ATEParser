@@ -32,9 +32,9 @@ using core::parseFieldValue;
 // ===================== DigitalTestRecord =====================
 
 void DigitalTestRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) test_status = static_cast<enums::DigitalTestStatus>(core::safeStoi(fields[0], "test_status", "@D-T", 0));
-    if (fields.size() > 2) test_substatus = core::safeStoi(fields[1], "test_substatus", "@D-T", 0);
-    if (fields.size() > 3) {failing_vector_number = core::safeStoiOptional(fields[2], "failing_vector_number", "@D-T");}
+    if (fields.size() > 0) test_status = static_cast<enums::DigitalTestStatus>(core::safeStoi(fields[0], "test_status", "@D-T", 0));
+    if (fields.size() > 1) test_substatus = core::safeStoi(fields[1], "test_substatus", "@D-T", 0);
+    if (fields.size() > 2) {failing_vector_number = core::safeStoiOptional(fields[2], "failing_vector_number", "@D-T");}
     if (fields.size() > 3) pin_count = core::safeStoi(fields[3], "pin_count", "@D-T", 0);
     if (fields.size() > 4) test_designator = fields[4];
     test_designator.erase(remove(test_designator.begin(), test_designator.end(), '\r'), test_designator.end());
@@ -144,11 +144,11 @@ json DevicePinRecord::toJson() const {
 // ===================== PLDProgrammingRecord =====================
 
 void PLDProgrammingRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) filename = fields[0];
-    if (fields.size() > 2) action = fields[1];
-    if (fields.size() > 3) action_return_code = core::safeStoi(fields[2], "action_return_code", "@D-PLD", 0);
-    if (fields.size() > 4) result_message = fields[3];
-    if (fields.size() > 5) player_program_counter = core::safeStoi(fields[4], "player_program_counter", "@D-PLD", 0);
+    if (fields.size() > 0) filename = fields[0];
+    if (fields.size() > 1) action = fields[1];
+    if (fields.size() > 2) action_return_code = core::safeStoi(fields[2], "action_return_code", "@D-PLD", 0);
+    if (fields.size() > 3) result_message = fields[3];
+    if (fields.size() > 4) player_program_counter = core::safeStoi(fields[4], "player_program_counter", "@D-PLD", 0);
 }
 
 json PLDProgrammingRecord::toJson() const {
@@ -175,8 +175,8 @@ json toJson(const PLDProgrammingRecord& rec) {
 // ===================== ExportRecord =====================
 
 void ExportRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) key = fields[1];
-    if (fields.size() > 2) field = fields[2];
+    if (fields.size() > 0) key = fields[0];
+    if (fields.size() > 1) field = fields[1];
     field.erase(remove(field.begin(), field.end(), '\r'), field.end());
     field.erase(remove(field.begin(), field.end(), '\n'), field.end());
     
@@ -200,8 +200,8 @@ json toJson(const ExportRecord& rec) {
 // ===================== NoteRecord =====================
 
 void NoteRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) note_name = fields[1];
-    if (fields.size() > 2) note_string = fields[2];
+    if (fields.size() > 0) note_name = fields[0];
+    if (fields.size() > 1) note_string = fields[1];
     note_string.erase(remove(note_string.begin(), note_string.end(), '\r'), note_string.end());
     note_string.erase(remove(note_string.begin(), note_string.end(), '\n'), note_string.end());
 }
@@ -224,9 +224,9 @@ json toJson(const NoteRecord& rec) {
 // ===================== ConnectCheckRecord =====================
 
 void ConnectCheckRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) test_status = static_cast<enums::GenericTestStatus>(core::safeStoi(fields[1], "test_status", "@CCHK", 0));
-    if (fields.size() > 2) pin_count = core::safeStoi(fields[2], "pin_count", "@CCHK", 0);
-    if (fields.size() > 3) device_designator = fields[3];
+    if (fields.size() > 0) test_status = static_cast<enums::GenericTestStatus>(core::safeStoi(fields[0], "test_status", "@CCHK", 0));
+    if (fields.size() > 1) pin_count = core::safeStoi(fields[1], "pin_count", "@CCHK", 0);
+    if (fields.size() > 2) device_designator = fields[2];
     device_designator.erase(remove(device_designator.begin(), device_designator.end(), '\r'), device_designator.end());
     device_designator.erase(remove(device_designator.begin(), device_designator.end(), '\n'), device_designator.end());
 }
@@ -243,8 +243,8 @@ json toJson(const ConnectCheckRecord& rec) {
 // ===================== PolarityCheckRecord =====================
 
 void PolarityCheckRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) test_status = static_cast<enums::GenericTestStatus>(core::safeStoi(fields[1], "test_status", "@POL", 0));
-    if (fields.size() > 2) test_designator = fields[2];
+    if (fields.size() > 0) test_status = static_cast<enums::GenericTestStatus>(core::safeStoi(fields[0], "test_status", "@POL", 0));
+    if (fields.size() > 1) test_designator = fields[1];
     test_designator.erase(remove(test_designator.begin(), test_designator.end(), '\r'), test_designator.end());
     test_designator.erase(remove(test_designator.begin(), test_designator.end(), '\n'), test_designator.end());
 }
@@ -303,12 +303,10 @@ void IndictmentRecord::fromFields(const vector<string>& fields) {
         }
     }
 
-    // 取出 device_list
     for (int i = 0; i < device_count && (1 + i) < fields.size(); ++i) {
         device_list.push_back(fields[1 + i]);
     }
 
-    // 其餘欄位
     size_t next_field = 1 + device_count;
     if (fields.size() > next_field)     est_resistance  = core::safeStodOptional(fields[next_field], "est_resistance", "@INDICT");
     if (fields.size() > next_field + 1) est_capacitance = core::safeStodOptional(fields[next_field + 1], "est_capacitance", "@INDICT");

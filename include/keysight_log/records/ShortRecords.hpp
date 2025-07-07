@@ -53,14 +53,15 @@ struct ShortsTestRecord : public core::LogRecord {
     int shorts_count;                      ///< Count of unexpected shorted nodes[2]
     int opens_count;                       ///< Count of unexpected open nodes[2]
     int phantoms_count;                    ///< Count of phantom shorts[2]
-    std::optional<std::string> designator;///< Optional designator string[2]
+    std::string designator;                ///< Optional designator string[2]
 
     ShortsTestRecord()
       : LogRecord(enums::LogRecordPrefix::TS),
         test_status(enums::GenericTestStatus::PASS),
         shorts_count(0),
         opens_count(0),
-        phantoms_count(0) {}
+        phantoms_count(0),
+        designator("") {}
 
     void fromFields(const vector<string>& fields) override;
     json toJson() const override;
