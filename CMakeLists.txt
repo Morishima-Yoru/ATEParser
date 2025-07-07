@@ -48,21 +48,26 @@ target_include_directories(ATEParser PUBLIC include third_party/nlohmann)
 # nlohmann json is header-only, so just include the path
 
 # 產生 DLL 於 output_dll/，且無 lib 前綴
-set_target_properties(ATEParser PROPERTIES
+set_target_properties(
+    ATEParser PROPERTIES
     PREFIX ""
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output_dll"
 )
+install(
+    TARGETS ATEParser 
+    RUNTIME_DEPENDENCIES 
+    RUNTIME DESTINATION "${CMAKE_CXX_COMPILER}/bin")
 
-get_filename_component(MINGW_BIN "${CMAKE_CXX_COMPILER}" DIRECTORY)
-set(MINGW_DLLS
-    libc++.dll
-    libunwind.dll
-    libwinpthread-1.dll
-)
-foreach(dll ${MINGW_DLLS})
-    add_custom_command(TARGET ATEParser POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${MINGW_BIN}/${dll}"
-            "$<TARGET_FILE_DIR:ATEParser>"
-    )
-endforeach()
+# get_filename_component(MINGW_BIN "${CMAKE_CXX_COMPILER}" DIRECTORY)
+# set(MINGW_DLLS
+#     libc++.dll
+#     libunwind.dll
+#     libwinpthread-1.dll
+# )
+# foreach(dll ${MINGW_DLLS})
+#     add_custom_command(TARGET ATEParser POST_BUILD
+#         COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#             "${MINGW_BIN}/${dll}"
+#             "$<TARGET_FILE_DIR:ATEParser>"
+#     )
+# endforeach()

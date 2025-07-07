@@ -179,5 +179,37 @@ optional<double> safeStodOptional(const string& str, const string& field_name,
     }
 }
 
+uint64_t safeStoull(const string& str, const string& field_name, 
+                    const string& record_type, uint64_t default_value){
+    if (isShowConversion()) {
+        cerr << "[DEBUG] safeStoi called for " << field_name << " in " << record_type 
+                  << " with value: '" << str << "'" << endl;
+    }
+    if (str.empty()) {
+        if (isShowConversion()) {
+            cerr << "Error: Empty string for " << field_name 
+                      << " in " << record_type << " record" << endl;
+        }
+        throw invalid_argument("Empty string for " + field_name + " in " + record_type + " record");
+    }
+    try {
+        return stoull(str);
+    } catch (const invalid_argument& e) {
+        if (isShowConversion()) {
+            cerr << "Error: Invalid argument for " << field_name 
+                      << " in " << record_type << " record. Value: '" << str 
+                      << "', Error: " << e.what() << endl;
+        }
+        throw;
+    } catch (const out_of_range& e) {
+        if (isShowConversion()) {
+            cerr << "Error: Out of range for " << field_name 
+                      << " in " << record_type << " record. Value: '" << str 
+                      << "', Error: " << e.what() << endl;
+        }
+        throw;
+    }
+}
+
 } // namespace core
 } // namespace keysight_log 
