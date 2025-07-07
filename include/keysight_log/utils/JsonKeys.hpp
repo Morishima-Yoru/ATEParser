@@ -53,7 +53,7 @@
 #define JSON_KEY_PHANTOMS_COUNT "phantoms_count"
 #define JSON_KEY_SOURCE_NODE   "source_node"
 #define JSON_KEY_DESTINATION_NODE "destination_node"
-#define JSON_KEY_DESTINATIONS  "destinations"
+#define JSON_KEY_DESTINATIONS_LIST  "destinations_list"
 #define JSON_KEY_DEVIATION     "deviation"
 #define JSON_KEY_NODE          "node"
 

@@ -288,19 +288,36 @@ json toJson(const TestJetRecord& rec) {
 // ===================== IndictmentRecord =====================
 
 void IndictmentRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) technique = fields[1];
-    if (fields.size() > 2) {
-        device_list.clear();
-        for (size_t i = 2; i < fields.size(); ++i) {
-            device_list.push_back(fields[i]);
+    device_list.clear();
+    technique.clear();
+
+    int device_count = 0;
+    if (fields.size() > 0) {
+        std::string::size_type pos = fields[0].find('\\');
+        if (pos != std::string::npos) {
+            technique = fields[0].substr(0, pos);
+            std::string count_str = fields[0].substr(pos + 1);
+            device_count = core::safeStoi(count_str, "device_count", "@INDICT", 0);
+        } else {
+            technique = fields[0];
         }
     }
-    if (fields.size() > 3) est_resistance = core::safeStodOptional(fields[3], "est_resistance", "@INDICT");
-    if (fields.size() > 4) est_capacitance = core::safeStodOptional(fields[4], "est_capacitance", "@INDICT");
-    if (fields.size() > 5) est_inductance = core::safeStodOptional(fields[5], "est_inductance", "@INDICT");
-    if (fields.size() > 6) est_model = fields[6];
-    est_model.erase(remove(est_model.begin(), est_model.end(), '\r'), est_model.end());
-    est_model.erase(remove(est_model.begin(), est_model.end(), '\n'), est_model.end());
+
+    // 取出 device_list
+    for (int i = 0; i < device_count && (1 + i) < fields.size(); ++i) {
+        device_list.push_back(fields[1 + i]);
+    }
+
+    // 其餘欄位
+    size_t next_field = 1 + device_count;
+    if (fields.size() > next_field)     est_resistance  = core::safeStodOptional(fields[next_field], "est_resistance", "@INDICT");
+    if (fields.size() > next_field + 1) est_capacitance = core::safeStodOptional(fields[next_field + 1], "est_capacitance", "@INDICT");
+    if (fields.size() > next_field + 2) est_inductance  = core::safeStodOptional(fields[next_field + 2], "est_inductance", "@INDICT");
+    if (fields.size() > next_field + 3) {
+        est_model = fields[next_field + 3];
+        est_model.erase(remove(est_model.begin(), est_model.end(), '\r'), est_model.end());
+        est_model.erase(remove(est_model.begin(), est_model.end(), '\n'), est_model.end());
+    }
 }
 
 json IndictmentRecord::toJson() const {

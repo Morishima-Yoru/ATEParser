@@ -80,7 +80,7 @@ nlohmann::json TsDestinationRecord::toJson() const {
         arr.push_back({{JSON_KEY_NODE, p.first}, {JSON_KEY_DEVIATION, p.second}});
     }
     nlohmann::json j = LogRecord::toJson();
-    j[JSON_KEY_DESTINATIONS] = arr;
+    j[JSON_KEY_DESTINATIONS_LIST] = arr;
     return j;
 }
 

@@ -178,7 +178,11 @@ json NodeListRecord::toJson() const {
 // ===================== ReportRecord =====================
 
 void ReportRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 0) message = fields[0];
+    message.clear();
+    for (size_t i = 0; i < fields.size(); ++i) {
+        if (i > 0) message += "|";
+        message += fields[i];
+    }
 }
 
 json ReportRecord::toJson() const {
