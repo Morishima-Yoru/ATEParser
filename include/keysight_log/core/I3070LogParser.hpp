@@ -53,6 +53,8 @@ private:
     
     // Analog Test record special parsing methods
     static pair<string, vector<string>> parseAnalogTestFields(const string& recordText);
+    // @TS-D record special parsing methods
+    static pair<string, vector<string>> parseTSDFields(const string& recordText);
 };
 
 } // namespace core

@@ -148,6 +148,10 @@ pair<string, vector<string>> I3070LogParser::parseFields(const string& recordTex
         return parsePINFields(recordText);
     }
     
+    if (startsWith(recordText, "@TS-D")) {
+        return parseTSDFields(recordText);
+    }
+    
     // Check for Analog Test records that may have optional subtest_designator
     if (isAnalogTestRecord(recordText)) {
         return parseAnalogTestFields(recordText);
@@ -337,6 +341,38 @@ pair<string, vector<string>> I3070LogParser::parseAnalogTestFields(const string&
         fields.push_back(recordText.substr(start, bracePos - start));
     }
     return {prefixStr, fields};
+}
+
+pair<string, vector<string>> I3070LogParser::parseTSDFields(const string& recordText) {
+    // Guard clause: validate @TS-D format
+    if (!startsWith(recordText, "@TS-D")) {
+        throw runtime_error("Invalid @TS-D record format");
+    }
+    size_t backslashPos = recordText.find('\\');
+    if (backslashPos == string::npos) {
+        // 沒有 count，直接用一般分割
+        size_t sep = recordText.find('|');
+        if (sep == string::npos) {
+            return {"@TS-D", {}};
+        }
+        auto fields = splitFields(recordText, '|', sep + 1);
+        return {"@TS-D", fields};
+    }
+    size_t pipePos = recordText.find('|', backslashPos);
+    if (pipePos == string::npos) {
+        throw runtime_error("Invalid @TS-D format: missing | after count");
+    }
+    vector<string> fields;
+    fields.reserve(8);
+    // 第一欄: node_count (含在 prefix 內)
+    fields.emplace_back(recordText, backslashPos, pipePos - backslashPos);
+    // 其餘欄位
+    size_t remainingStart = pipePos + 1;
+    if (remainingStart < recordText.size()) {
+        auto remainingFields = splitFields(recordText, '|', remainingStart);
+        fields.insert(fields.end(), remainingFields.begin(), remainingFields.end());
+    }
+    return {"@TS-D", fields};
 }
 
 unique_ptr<LogRecordContainer> I3070LogParser::parse(const string& logText) {
