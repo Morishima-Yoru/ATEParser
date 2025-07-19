@@ -10,15 +10,24 @@ using namespace std;
 namespace keysight_log {
 namespace core {
 
+enum ParseResult : int {
+    Success = 0,
+    InputError = 1,       // For file not found, empty log content, etc.
+    ParseError = 2,       // For errors during the parsing process
+    JsonConversionError = 3, // For errors converting to JSON
+    OutputError = 4,       // For file write errors
+    FailedIntegrity = 5,   // Added for integrity check failure
+};
+
 #ifdef _WIN32
 #define DLL_EXPORT __declspec(dllexport)
 #else
 #define DLL_EXPORT
 #endif
 
-extern "C" DLL_EXPORT const char* parse_file(const char* log_filepath, const char* dst_filepath, int indent, bool keep_raw);
-extern "C" DLL_EXPORT void free_mem(const char* ptr);
-extern "C" DLL_EXPORT const char* parse_log_string(const char* log_content, const char* dst_filepath, int indent, bool keep_raw);
+extern "C" DLL_EXPORT ParseResult parse_file(const char* log_filepath, const char* dst_filepath, int indent, bool keep_raw, char** out_json_str);
+extern "C" DLL_EXPORT void free_mem(char* ptr);
+extern "C" DLL_EXPORT ParseResult parse_log_string(const char* log_content, const char* dst_filepath, int indent, bool keep_raw, char** out_json_str);
 
 class I3070LogParser {
 public:

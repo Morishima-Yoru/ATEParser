@@ -2,9 +2,9 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include "include/keysight_log/core/I3070LogParser.hpp"
-#include "include/keysight_log/core/LogRecord.hpp"
-#include "include/keysight_log/utils/ConfigReader.hpp"
+#include "keysight_log/core/I3070LogParser.hpp"
+#include "keysight_log/core/LogRecord.hpp"
+#include "keysight_log/utils/ConfigReader.hpp"
 
 int main(int argc, char* argv[]) {
     keysight_log::core::ConfigReader config("config.ini");

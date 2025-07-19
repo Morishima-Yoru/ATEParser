@@ -381,6 +381,27 @@ unique_ptr<LogRecordContainer> I3070LogParser::parse(const string& logText) {
         return make_unique<LogRecordContainer>(nullptr);
     }
     
+    // Trim leading whitespace and check if the log starts with '{'
+    size_t firstCharPos = logText.find_first_not_of(" \t\r\n");
+    if (firstCharPos == string::npos || logText[firstCharPos] != '{') {
+        throw runtime_error("failed integrity");
+    }
+
+    // Find the end of the first record's flat fields to extract the prefix
+    size_t recordContentStart = firstCharPos + 1;
+    size_t firstPipePos = logText.find('|', recordContentStart);
+    size_t firstBracePos = logText.find('{', recordContentStart);
+    size_t flatFieldEnd = (firstPipePos < firstBracePos) ? firstPipePos : firstBracePos;
+
+    // Extract and trim the prefix string
+    string prefixStr = logText.substr(recordContentStart, flatFieldEnd - recordContentStart);
+    trimInPlace(prefixStr);
+
+    // Validate that the first record is @BATCH
+    if (prefixStr != "@BATCH") {
+        throw runtime_error("failed integrity");
+    }
+    
     auto root = make_unique<LogRecordContainer>(nullptr);
     parseContainer(logText, *root);
     return root;
@@ -463,54 +484,82 @@ json I3070LogParser::containerToJson(const LogRecordContainer& container) {
     return j;
 }
 
-extern "C" DLL_EXPORT const char* parse_file(const char* log_filepath, const char* dst_filepath, int indent, bool keep_raw) {
-    using namespace keysight_log::core;
-    // 設定是否保留 raw field
-    LogRecord::show_raw_field = keep_raw;
-    // 讀取 log 檔案
+extern "C" DLL_EXPORT ParseResult parse_file(const char* log_filepath, const char* dst_filepath, int indent, bool keep_raw, char** out_json_str) {
+    if (!log_filepath || !out_json_str) {
+        return InputError;
+    }
+    *out_json_str = nullptr;
+
     std::ifstream ifs(log_filepath);
     if (!ifs) {
-        static std::string err = "Cannot open log file";
-        return err.c_str();
+        return InputError;
     }
+
     std::stringstream buffer;
     buffer << ifs.rdbuf();
     std::string logText = buffer.str();
-    // 解析 log
-    I3070LogParser parser;
-    auto tree = parser.parse(logText);
-    auto json = I3070LogParser::containerToJson(*tree);
-    std::string json_str = json.dump(indent);
-    // 若有指定輸出檔案
-    if (dst_filepath && std::strlen(dst_filepath) > 0) {
-        std::ofstream ofs(dst_filepath);
-        ofs << json_str;
-        ofs.close();
+
+    if (logText.empty()) {
+        return InputError;
     }
-    // 回傳字串（需由 Python 負責釋放）
-    char* result = new char[json_str.size() + 1];
-    std::memcpy(result, json_str.c_str(), json_str.size() + 1);
-    return result;
+
+    return parse_log_string(logText.c_str(), dst_filepath, indent, keep_raw, out_json_str);
 }
 
-extern "C" DLL_EXPORT void free_mem(const char* ptr) {
-    delete[] ptr;
+extern "C" DLL_EXPORT void free_mem(char* ptr) {
+    if (ptr) {
+        free(ptr);
+    }
 }
 
-extern "C" DLL_EXPORT const char* parse_log_string(const char* log_content, const char* dst_filepath, int indent, bool keep_raw) {
-    using namespace keysight_log::core;
-    LogRecord::show_raw_field = keep_raw;
-    std::string logText = log_content ? log_content : "";
-    I3070LogParser parser;
-    auto tree = parser.parse(logText);
-    auto json = I3070LogParser::containerToJson(*tree);
-    std::string json_str = json.dump(indent);
-    if (dst_filepath && std::strlen(dst_filepath) > 0) {
-        std::ofstream ofs(dst_filepath);
-        ofs << json_str;
-        ofs.close();
+extern "C" DLL_EXPORT ParseResult parse_log_string(const char* log_content, const char* dst_filepath, int indent, bool keep_raw, char** out_json_str) {
+    if (!log_content || !out_json_str) {
+        return InputError;
     }
-    char* result = new char[json_str.size() + 1];
-    std::memcpy(result, json_str.c_str(), json_str.size() + 1);
-    return result;
+    *out_json_str = nullptr;
+
+    try {
+        LogRecord::show_raw_field = keep_raw;
+        I3070LogParser parser;
+        auto tree = parser.parse(log_content);
+
+        if (!tree) {
+            return ParseError;
+        }
+
+        auto json = I3070LogParser::containerToJson(*tree);
+        std::string json_str = json.dump(indent);
+
+        // Duplicate the string for the C-style output
+        #ifdef _WIN32
+            *out_json_str = _strdup(json_str.c_str());
+        #else
+            *out_json_str = strdup(json_str.c_str());
+        #endif
+
+        if (!*out_json_str) {
+            return OutputError; // Memory allocation failed
+        }
+
+        if (dst_filepath && strlen(dst_filepath) > 0) {
+            std::ofstream ofs(dst_filepath);
+            if (!ofs) {
+                return OutputError;
+            }
+            ofs << json_str;
+            ofs.close();
+        }
+
+        return Success;
+    } catch (const std::exception& e) {
+        // In case of any exception, return a generic parse error.
+        // Optionally, log the error message e.what() for debugging.
+        if (strcmp(e.what(), "failed integrity") == 0) {
+            return FailedIntegrity;
+        }
+        return ParseError;
+    } catch (...) {
+        // Catch any other unknown errors
+        return ParseError;
+    }
 } 

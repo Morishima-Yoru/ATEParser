@@ -31,7 +31,7 @@ include_directories(
 # Find source files
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-add_executable(ATEParserApp main.cpp ${SOURCES})
+add_executable(ATEParserApp ${SOURCES})
 
 add_library(ATEParser SHARED
     src/containers/LogRecordContainer.cpp
@@ -39,9 +39,9 @@ add_library(ATEParser SHARED
     src/core/FieldValue.cpp
     src/core/I3070LogParser.cpp
     src/core/LogRecord.cpp
-    src/emums/FieldType.cpp
-    src/emums/LogRecordPrefix.cpp
-    src/emums/TestStatus.cpp
+    src/enums/FieldType.cpp
+    src/enums/LogRecordPrefix.cpp
+    src/enums/TestStatus.cpp
     src/records/AnalogRecords.cpp
     src/records/DigitalRecords.cpp
     src/records/ShortRecords.cpp
@@ -64,7 +64,7 @@ target_include_directories(ATEParser PUBLIC include third_party/nlohmann)
 set_target_properties(
     ATEParser PROPERTIES
     PREFIX ""
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/output_dll"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 # 安裝 DLL 及其依賴到 output_dll 目錄
 install(
@@ -86,7 +86,7 @@ install(
         POST_EXCLUDE_REGEXES "oleaut32.dll"
         POST_EXCLUDE_REGEXES "ws2_32.dll"
         DIRECTORIES "${MINGW_BIN_DIR}"
-    RUNTIME DESTINATION "output_dll"
+    RUNTIME DESTINATION "bin"
 )
 
 
