@@ -159,9 +159,18 @@ json NetVerifyRecord::toJson() const {
 // ===================== NodeListRecord =====================
 
 void NodeListRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 0) count = core::safeStoi(fields[0], "count", "@NODE", 0);
+    nodes.clear();
+    if (fields.size() > 0) {
+        string::size_type pos = fields[0].find('\\');
+        if (pos != string::npos) {
+            count = core::safeStoi(fields[0], "count", "@NODE", 0);
+        } else {
+            count = 1;
+            nodes.push_back(fields[0]);
+            return ;
+        }
+    }
     if (fields.size() > 1) {
-        nodes.clear();
         for (size_t i = 1; i < fields.size(); ++i) {
             nodes.push_back(fields[i]);
         }

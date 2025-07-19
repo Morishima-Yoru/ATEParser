@@ -101,7 +101,7 @@ nlohmann::json TsOpenRecord::toJson() const {
 // ======================= TsPhantomRecord =======================
 
 void TsPhantomRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 1) deviation = core::safeStodOptional(fields[1], "deviation", "@TS-P");
+    if (fields.size() > 0) deviation = core::safeStodOptional(fields[0], "deviation", "@TS-P");
 }
 
 nlohmann::json TsPhantomRecord::toJson() const {
