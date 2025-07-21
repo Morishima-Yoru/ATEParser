@@ -5,17 +5,14 @@ import sys
 import ctypes as ct
 from enum import IntEnum
 
-if TYPE_CHECKING:
-  from ctypes import _Pointer
-
 
 class ParseResult(IntEnum):
-    Success = 0
-    InputError = 1
-    ParseError = 2
-    JsonConversionError = 3
-    OutputError = 4
-    FailedIntegrity = 5
+    SUCCESS               = 0
+    INPUT_ERROR           = 1
+    PARSE_ERROR           = 2
+    JSON_CONVERSION_ERROR = 3
+    OUTPUT_ERROR          = 4
+    FAILED_INTEGRITY      = 5
 
 
 class ATELogParseWrapper:
@@ -64,13 +61,13 @@ class ATELogParseWrapper:
       ct.c_int(indent), 
       ct.c_bool(keep_raw),
       ct.byref(out_json_str)) # type: ignore
-    if ret_code != ParseResult.Success:
+    if ret_code != ParseResult.SUCCESS:
         raise RuntimeError(f"Failed to parse log string, error code: {ret_code}")
     if not out_json_str.value:
-        return ParseResult.OutputError, ""
+        return ParseResult.OUTPUT_ERROR, ""
     result = out_json_str.value.decode('utf-8')
     self.__free_mem(ct.cast(out_json_str, ct.c_void_p))
-    return ParseResult.Success, result
+    return ParseResult.SUCCESS, result
     
   
   def parse_file(
