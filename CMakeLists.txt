@@ -4,12 +4,19 @@ cmake_minimum_required(VERSION 3.21)
 set(CMAKE_C_COMPILER "x86_64-w64-mingw32-gcc.exe")
 set(CMAKE_CXX_COMPILER "x86_64-w64-mingw32-g++.exe")
 if(WIN32)
+    # Resolve MinGW runtime DLL directory robustly
+    set(MINGW_BIN_DIR "")
     execute_process(
-        COMMAND ${CMAKE_CXX_COMPILER} -print-prog-name=ld
-        OUTPUT_VARIABLE MINGW_LD_PATH
+        COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libstdc++-6.dll
+        OUTPUT_VARIABLE MINGW_STDCPP_DLL
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    get_filename_component(MINGW_BIN_DIR "${MINGW_LD_PATH}" DIRECTORY)
+    if (EXISTS "${MINGW_STDCPP_DLL}")
+        get_filename_component(MINGW_BIN_DIR "${MINGW_STDCPP_DLL}" DIRECTORY)
+    else()
+        # Fallback: use compiler's directory
+        get_filename_component(MINGW_BIN_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    endif()
     message(STATUS "MINGW_BIN_DIR: ${MINGW_BIN_DIR}")
 endif()
 

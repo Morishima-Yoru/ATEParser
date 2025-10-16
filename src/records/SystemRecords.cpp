@@ -281,7 +281,7 @@ json BsOpenRecord::toJson() const {
 // ===================== BoundaryScanRecord =====================
 void BoundaryScanRecord::fromFields(const vector<string>& fields) {
     if (fields.size() > 0) test_designator = fields[0];
-    if (fields.size() > 1) status          = core::safeStoi(fields[1], "status", "@CON");
+    if (fields.size() > 1) status          = core::safeStoi(fields[1], "status", "@BS-CON");
     if (fields.size() > 2) shorts_count     = core::safeStoiOptional(fields[2], "shorts_count", "@BS-CON");
     if (fields.size() > 3) opens_count     = core::safeStoiOptional(fields[3], "opens_count", "@BS-CON");
 }

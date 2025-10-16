@@ -369,7 +369,7 @@ struct ConnectCheckRecord : public core::LogRecord {
 };
 
 /**
- * @struct PolarlityCheckRecord
+ * @struct PolarityCheckRecord
  * @brief Record structure for Polarity Check test results (@PCHK)
  * 
  * This record describes the results of Polarity Check tests which verify

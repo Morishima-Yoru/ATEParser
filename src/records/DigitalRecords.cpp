@@ -243,7 +243,7 @@ json toJson(const ConnectCheckRecord& rec) {
 // ===================== PolarityCheckRecord =====================
 
 void PolarityCheckRecord::fromFields(const vector<string>& fields) {
-    if (fields.size() > 0) test_status = static_cast<enums::GenericTestStatus>(core::safeStoi(fields[0], "test_status", "@POL", 0));
+    if (fields.size() > 0) test_status = static_cast<enums::GenericTestStatus>(core::safeStoi(fields[0], "test_status", "@PCHK", 0));
     if (fields.size() > 1) test_designator = fields[1];
     test_designator.erase(remove(test_designator.begin(), test_designator.end(), '\r'), test_designator.end());
     test_designator.erase(remove(test_designator.begin(), test_designator.end(), '\n'), test_designator.end());
