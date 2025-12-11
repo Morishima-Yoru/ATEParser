@@ -1,7 +1,7 @@
-#include "keysight_log/core/I3070LogParser.hpp"
-#include "keysight_log/containers/LogRecordFactory.hpp"
-#include "keysight_log/utils/JsonKeys.hpp"
-#include "keysight_log/utils/ConfigReader.hpp"
+#include "i3070/core/I3070LogParser.hpp"
+#include "i3070/containers/LogRecordFactory.hpp"
+#include "i3070/utils/JsonKeys.hpp"
+#include "i3070/utils/ConfigReader.hpp"
 #include <stack>
 #include <stdexcept>
 #include <iostream>
@@ -11,11 +11,11 @@
 #include <fstream>
 #include <sstream>
 #include <cstring>
-#include "keysight_log/core/LogRecord.hpp"
+#include "i3070/core/LogRecord.hpp"
 
 using namespace std;
-using namespace keysight_log::core;
-using namespace keysight_log::containers;
+using namespace i3070::core;
+using namespace i3070::containers;
 using json = nlohmann::json;
 
 namespace {

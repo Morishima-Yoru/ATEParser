@@ -12,13 +12,13 @@
  * Based on Keysight i3070 Log Record Format (Table 8-1) [1].
  */
 
-#include "keysight_log/enums/LogRecordPrefix.hpp"
+#include "i3070/enums/LogRecordPrefix.hpp"
 #include <nlohmann/json.hpp>
 
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace enums {
 
 // Mapping from string to enum
@@ -246,4 +246,4 @@ string getPrefixCategory(LogRecordPrefix prefix) {
 }
 
 } // namespace enums
-} // namespace keysight_log
+} // namespace i3070

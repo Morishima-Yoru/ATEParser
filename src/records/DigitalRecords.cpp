@@ -10,10 +10,10 @@
  * Based strictly on Keysight i3070 ICT Log Record Format (Tables 8-29–8-34, Sections "How Log Records are Formatted") [^1].
  */
 
-#include "keysight_log/records/DigitalRecords.hpp"
-#include "keysight_log/utils/SafeConversion.hpp"
-#include "keysight_log/utils/JsonKeys.hpp"
-#include "keysight_log/core/FieldValue.hpp"
+#include "i3070/records/DigitalRecords.hpp"
+#include "i3070/utils/SafeConversion.hpp"
+#include "i3070/utils/JsonKeys.hpp"
+#include "i3070/core/FieldValue.hpp"
 #include <nlohmann/json.hpp>
 #include <charconv>
 #include <iostream>
@@ -22,7 +22,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace records {
 
 using core::FieldValue;
@@ -368,4 +368,4 @@ json PinRecord::toJson() const {
 }
 
 } // namespace records
-} // namespace keysight_log
+} // namespace i3070

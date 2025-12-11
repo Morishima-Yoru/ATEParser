@@ -11,15 +11,15 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_ENUMS_LOGRECORDPREFIX_HPP
-#define KEYSIGHT_LOG_ENUMS_LOGRECORDPREFIX_HPP
+#ifndef I3070_ENUMS_LOGRECORDPREFIX_HPP
+#define I3070_ENUMS_LOGRECORDPREFIX_HPP
 
 #include <string>
 #include <unordered_map>
 
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace enums {
 
 /**
@@ -183,6 +183,6 @@ string getPrefixDescription(LogRecordPrefix prefix);
 string getPrefixCategory(LogRecordPrefix prefix);
 
 } // namespace enums
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_ENUMS_LOGRECORDPREFIX_HPP
+#endif // I3070_ENUMS_LOGRECORDPREFIX_HPP

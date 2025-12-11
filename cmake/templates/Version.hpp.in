@@ -8,7 +8,7 @@
   #define DLL_EXPORT
 #endif
 
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
 /**
@@ -26,7 +26,7 @@ std::string get_version();
 std::string get_build_hash();
 
 } // namespace core
-} // namespace keysight_log
+} // namespace i3070
 
 extern "C" {
     /**

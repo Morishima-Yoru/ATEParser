@@ -65,7 +65,7 @@ set(PROJECT_VERSION_FULL "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PR
 message(STATUS "Project Version: ${PROJECT_VERSION_FULL}")
 
 # Configure Version files
-# configure_file(cmake/templates/Version.hpp.in ${CMAKE_BINARY_DIR}/include/keysight_log/core/Version.hpp)
+# configure_file(cmake/templates/Version.hpp.in ${CMAKE_BINARY_DIR}/include/i3070/core/Version.hpp)
 # configure_file(cmake/templates/Version.cpp.in ${CMAKE_BINARY_DIR}/src/core/Version.cpp)
 
 # --- Auto-Increment Build Number ---

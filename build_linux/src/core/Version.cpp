@@ -1,10 +1,10 @@
-#include "keysight_log/core/Version.hpp"
+#include "i3070/core/Version.hpp"
 
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
-static const std::string VERSION_FULL = "0.0.0.4.c220776";
-static const std::string BUILD_HASH = "c220776";
+static const std::string VERSION_FULL = "0.0.0.6.ac181a7";
+static const std::string BUILD_HASH = "ac181a7";
 
 std::string get_version() {
     return VERSION_FULL;
@@ -15,14 +15,14 @@ std::string get_build_hash() {
 }
 
 } // namespace core
-} // namespace keysight_log
+} // namespace i3070
 
 extern "C" {
     const char* get_version_c() {
-        return keysight_log::core::VERSION_FULL.c_str();
+        return i3070::core::VERSION_FULL.c_str();
     }
 
     const char* get_build_hash_c() {
-        return keysight_log::core::BUILD_HASH.c_str();
+        return i3070::core::BUILD_HASH.c_str();
     }
 }

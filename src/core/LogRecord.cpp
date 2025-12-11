@@ -1,13 +1,13 @@
-#include "keysight_log/core/LogRecord.hpp"
-#include "keysight_log/utils/ConfigReader.hpp"
-#include "keysight_log/enums/LogRecordPrefix.hpp"
+#include "i3070/core/LogRecord.hpp"
+#include "i3070/utils/ConfigReader.hpp"
+#include "i3070/enums/LogRecordPrefix.hpp"
 #include <set>
 #include <mutex>
 
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
 namespace {
@@ -31,7 +31,7 @@ bool LogRecord::show_raw_field = false;
 
 string LogRecord::prefixToString(enums::LogRecordPrefix prefix) {
     // Directly call prefixToString in enums
-    return keysight_log::enums::prefixToString(prefix);
+    return i3070::enums::prefixToString(prefix);
 }
 
 void LogRecord::fromFields(const vector<string>& fields) {
@@ -53,4 +53,4 @@ json LogRecord::toJson() const {
 }
 
 } // namespace core
-} // namespace keysight_log 
+} // namespace i3070 

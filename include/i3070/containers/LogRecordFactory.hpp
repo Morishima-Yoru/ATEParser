@@ -13,8 +13,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_CONTAINERS_LOGRECORDFACTORY_HPP
-#define KEYSIGHT_LOG_CONTAINERS_LOGRECORDFACTORY_HPP
+#ifndef I3070_CONTAINERS_LOGRECORDFACTORY_HPP
+#define I3070_CONTAINERS_LOGRECORDFACTORY_HPP
 
 #include "../core/LogRecord.hpp"
 #include "../records/AnalogRecords.hpp"
@@ -28,7 +28,7 @@
 
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace containers {
 
 /**
@@ -105,8 +105,8 @@ public:
      * @brief Convert a string prefix to a LogRecordPrefix enum
      */
     inline static enums::LogRecordPrefix stringToPrefix(const string& prefixStr) {
-        using keysight_log::enums::LogRecordPrefix;
-        using namespace keysight_log::enums;
+        using i3070::enums::LogRecordPrefix;
+        using namespace i3070::enums;
         static const unordered_map<string, LogRecordPrefix> map = {
             {"@A-CAP", LogRecordPrefix::A_CAP},
             {"@A-DIO", LogRecordPrefix::A_DIO},
@@ -158,6 +158,6 @@ public:
 };
 
 } // namespace containers
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_CONTAINERS_LOGRECORDFACTORY_HPP
+#endif // I3070_CONTAINERS_LOGRECORDFACTORY_HPP

@@ -11,8 +11,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_ENUMS_TESTSTATUS_HPP
-#define KEYSIGHT_LOG_ENUMS_TESTSTATUS_HPP
+#ifndef I3070_ENUMS_TESTSTATUS_HPP
+#define I3070_ENUMS_TESTSTATUS_HPP
 
 #include <string>
 #include <unordered_map>
@@ -20,7 +20,7 @@
 
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace enums {
 
 /**
@@ -316,6 +316,6 @@ int getStatusSeverity(DigitalTestStatus status);
 int getStatusSeverity(GenericTestStatus status);
 
 } // namespace enums
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_ENUMS_TESTSTATUS_HPP
+#endif // I3070_ENUMS_TESTSTATUS_HPP

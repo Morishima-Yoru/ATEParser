@@ -1092,3 +1092,6 @@ dkms.conf
 .spec/
 memo.md
 .venv/
+build_linux/*
+build_linux/src/core/Version.cpp
+build_linux/include/i3070/core/Version.hpp

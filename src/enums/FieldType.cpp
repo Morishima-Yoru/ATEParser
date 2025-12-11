@@ -10,7 +10,7 @@
  * Based strictly on Keysight i3070 Log Record Format (Tables 8-2, 8-3)[1].
  */
 
-#include "keysight_log/enums/FieldType.hpp"
+#include "i3070/enums/FieldType.hpp"
 #include <nlohmann/json.hpp>
 #include <algorithm>
 #include <cctype>
@@ -20,7 +20,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace enums {
 
 // Convert string to FieldType enum
@@ -187,4 +187,4 @@ int getFieldTypeSize(FieldType field_type) {
 }
 
 } // namespace enums
-} // namespace keysight_log
+} // namespace i3070

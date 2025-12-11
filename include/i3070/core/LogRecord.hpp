@@ -1,5 +1,5 @@
-#ifndef KEYSIGHT_LOG_CORE_LOGRECORD_HPP
-#define KEYSIGHT_LOG_CORE_LOGRECORD_HPP
+#ifndef I3070_CORE_LOGRECORD_HPP
+#define I3070_CORE_LOGRECORD_HPP
 
 #include <string>
 #include <vector>
@@ -8,7 +8,7 @@
 
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
 /**
@@ -48,6 +48,6 @@ public:
 };
 
 } // namespace core
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_CORE_LOGRECORD_HPP 
+#endif // I3070_CORE_LOGRECORD_HPP 

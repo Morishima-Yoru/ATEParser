@@ -1,10 +1,10 @@
-#include "keysight_log/utils/ConfigReader.hpp"
+#include "i3070/utils/ConfigReader.hpp"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include <nlohmann/json.hpp>
 
-using namespace keysight_log::core;
+using namespace i3070::core;
 using namespace std;
 using json = nlohmann::json;
 

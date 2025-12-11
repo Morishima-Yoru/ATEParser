@@ -11,8 +11,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_ENUMS_FIELDTYPE_HPP
-#define KEYSIGHT_LOG_ENUMS_FIELDTYPE_HPP
+#ifndef I3070_ENUMS_FIELDTYPE_HPP
+#define I3070_ENUMS_FIELDTYPE_HPP
 
 #include <string>
 #include <variant>
@@ -21,7 +21,7 @@
 
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace enums {
 
 /**
@@ -239,6 +239,6 @@ optional<T> extractValue(const FieldValue& value) {
 }
 
 } // namespace enums
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_ENUMS_FIELDTYPE_HPP
+#endif // I3070_ENUMS_FIELDTYPE_HPP

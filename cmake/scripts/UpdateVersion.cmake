@@ -50,6 +50,6 @@ configure_file(
 # Configure Version.hpp (Less frequent changes, but ensuring consistency)
 configure_file(
     "${SOURCE_DIR}/cmake/templates/Version.hpp.in"
-    "${BINARY_DIR}/include/keysight_log/core/Version.hpp"
+    "${BINARY_DIR}/include/i3070/core/Version.hpp"
     @ONLY
 )

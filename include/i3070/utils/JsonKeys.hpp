@@ -1,5 +1,5 @@
-#ifndef KEYSIGHT_LOG_CORE_JSONKEYS_HPP
-#define KEYSIGHT_LOG_CORE_JSONKEYS_HPP
+#ifndef I3070_CORE_JSONKEYS_HPP
+#define I3070_CORE_JSONKEYS_HPP
 
 // JSON output key name definitions
 // Use macros for unified management and modification
@@ -148,4 +148,4 @@
 
 #define JSON_KEY_SERIAL_NUMBER "serial_number"
 
-#endif // KEYSIGHT_LOG_CORE_JSONKEYS_HPP 
+#endif // I3070_CORE_JSONKEYS_HPP 

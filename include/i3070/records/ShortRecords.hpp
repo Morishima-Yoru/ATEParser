@@ -12,8 +12,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_RECORDS_SHORTRECORDS_HPP
-#define KEYSIGHT_LOG_RECORDS_SHORTRECORDS_HPP
+#ifndef I3070_RECORDS_SHORTRECORDS_HPP
+#define I3070_RECORDS_SHORTRECORDS_HPP
 
 #include "../core/LogRecord.hpp"
 #include "../enums/LogRecordPrefix.hpp"
@@ -29,7 +29,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace records {
 
 /**
@@ -162,6 +162,6 @@ struct TsPhantomRecord : public core::LogRecord {
 };
 
 } // namespace records
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_RECORDS_SHORTRECORDS_HPP
+#endif // I3070_RECORDS_SHORTRECORDS_HPP

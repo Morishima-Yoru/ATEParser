@@ -11,9 +11,9 @@
  * @date 2025-06-19
  */
 
-#include "keysight_log/containers/LogRecordContainer.hpp"
+#include "i3070/containers/LogRecordContainer.hpp"
 
-namespace keysight_log {
+namespace i3070 {
 namespace containers {
 
 // Default constructor: creates an empty container with no record
@@ -53,4 +53,4 @@ void LogRecordContainer::clearSubrecords() {
 }
 
 }  // namespace containers
-}  // namespace keysight_log
+}  // namespace i3070

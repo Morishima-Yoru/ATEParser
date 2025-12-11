@@ -12,8 +12,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_RECORDS_ANALOGRECORDS_HPP
-#define KEYSIGHT_LOG_RECORDS_ANALOGRECORDS_HPP
+#ifndef I3070_RECORDS_ANALOGRECORDS_HPP
+#define I3070_RECORDS_ANALOGRECORDS_HPP
 
 #include <string>
 #include <optional>
@@ -32,7 +32,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace records {
 
 // Forward declarations
@@ -51,7 +51,7 @@ public:
     /**
      * @brief Constructor with prefix
      */
-    explicit LimitRecord(keysight_log::enums::LogRecordPrefix prefix_type)
+    explicit LimitRecord(i3070::enums::LogRecordPrefix prefix_type)
         : LogRecord(prefix_type) {}
     /**
      * @brief Virtual destructor
@@ -605,6 +605,6 @@ string analogTestStatusToString(enums::AnalogTestStatus status);
 bool validateMeasuredValue(double measured_value, const LimitRecord* limit_record);
 
 } // namespace records
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_RECORDS_ANALOGRECORDS_HPP
+#endif // I3070_RECORDS_ANALOGRECORDS_HPP

@@ -11,8 +11,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_CORE_FIELDVALUE_HPP
-#define KEYSIGHT_LOG_CORE_FIELDVALUE_HPP
+#ifndef I3070_CORE_FIELDVALUE_HPP
+#define I3070_CORE_FIELDVALUE_HPP
 
 
 #include <variant>
@@ -22,7 +22,7 @@
 
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
 /**
@@ -99,6 +99,6 @@ optional<T> getValue(const FieldValue& v) {
 }
 
 } // namespace core
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_CORE_FIELDVALUE_HPP
+#endif // I3070_CORE_FIELDVALUE_HPP

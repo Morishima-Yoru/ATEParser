@@ -10,8 +10,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_CORE_SAFECONVERSION_HPP
-#define KEYSIGHT_LOG_CORE_SAFECONVERSION_HPP
+#ifndef I3070_CORE_SAFECONVERSION_HPP
+#define I3070_CORE_SAFECONVERSION_HPP
 
 #include <string>
 #include <optional>
@@ -19,7 +19,7 @@
 
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
 /**
@@ -88,6 +88,6 @@ optional<double> safeStodOptional(const string& str, const string& field_name,
                                       const string& record_type);
 
 } // namespace core
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_CORE_SAFECONVERSION_HPP 
+#endif // I3070_CORE_SAFECONVERSION_HPP 

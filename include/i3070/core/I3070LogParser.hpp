@@ -1,13 +1,13 @@
-#ifndef KEYSIGHT_LOG_CORE_I3070LOGPARSER_HPP
-#define KEYSIGHT_LOG_CORE_I3070LOGPARSER_HPP
+#ifndef I3070_CORE_I3070LOGPARSER_HPP
+#define I3070_CORE_I3070LOGPARSER_HPP
 
 #include <string>
 #include <memory>
 #include <vector>
 #include <nlohmann/json.hpp>
-#include "keysight_log/containers/LogRecordContainer.hpp"
+#include "i3070/containers/LogRecordContainer.hpp"
 using namespace std;
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
 enum ParseResult : int {
@@ -67,6 +67,6 @@ private:
 };
 
 } // namespace core
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_CORE_I3070LOGPARSER_HPP 
+#endif // I3070_CORE_I3070LOGPARSER_HPP 

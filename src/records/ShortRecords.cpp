@@ -9,15 +9,15 @@
  * Based strictly on Keysight i3070 Log Record Format (Tables 8-47 to 8-51) [1].
  */
 
-#include "keysight_log/records/ShortRecords.hpp"
-#include "keysight_log/utils/SafeConversion.hpp"
-#include "keysight_log/utils/JsonKeys.hpp"
+#include "i3070/records/ShortRecords.hpp"
+#include "i3070/utils/SafeConversion.hpp"
+#include "i3070/utils/JsonKeys.hpp"
 #include <nlohmann/json.hpp>
 
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace records {
 
 // ========================= ShortsTestRecord =========================
@@ -108,4 +108,4 @@ nlohmann::json TsPhantomRecord::toJson() const {
 }
 
 } // namespace records
-} // namespace keysight_log
+} // namespace i3070

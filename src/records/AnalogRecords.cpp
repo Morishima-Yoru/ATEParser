@@ -9,9 +9,9 @@
  * Based strictly on Keysight_i3070_LogRecord_Format.pdf, Tables 8-4 to 8-11 [1].
  */
 
-#include "keysight_log/records/AnalogRecords.hpp"
-#include "keysight_log/core/FieldValue.hpp"
-#include "keysight_log/utils/SafeConversion.hpp"
+#include "i3070/records/AnalogRecords.hpp"
+#include "i3070/core/FieldValue.hpp"
+#include "i3070/utils/SafeConversion.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <sstream>
@@ -21,7 +21,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace records {
 
 
@@ -78,12 +78,12 @@ void AnalogTestRecord::setLimitRecord(unique_ptr<LimitRecord> limit_rec) {
 // --------------------------- Lim2Record ---------------------------
 
 Lim2Record::Lim2Record()
-    : LimitRecord(keysight_log::enums::LogRecordPrefix::LIM2),
+    : LimitRecord(i3070::enums::LogRecordPrefix::LIM2),
       high_limit(0.0),
       low_limit(0.0) {}
 
 Lim2Record::Lim2Record(double high_limit_val, double low_limit_val)
-    : LimitRecord(keysight_log::enums::LogRecordPrefix::LIM2),
+    : LimitRecord(i3070::enums::LogRecordPrefix::LIM2),
       high_limit(high_limit_val),
       low_limit(low_limit_val) {}
 
@@ -118,7 +118,7 @@ double Lim2Record::getCenterPoint() const {
 // --------------------------- Lim3Record ---------------------------
 
 Lim3Record::Lim3Record()
-    : LimitRecord(keysight_log::enums::LogRecordPrefix::LIM3),
+    : LimitRecord(i3070::enums::LogRecordPrefix::LIM3),
       nominal_value(0.0),
       high_limit(0.0),
       low_limit(0.0) {}
@@ -126,7 +126,7 @@ Lim3Record::Lim3Record()
 Lim3Record::Lim3Record(double nominal_val,
                        double high_limit_val,
                        double low_limit_val)
-    : LimitRecord(keysight_log::enums::LogRecordPrefix::LIM3),
+    : LimitRecord(i3070::enums::LogRecordPrefix::LIM3),
       nominal_value(nominal_val),
       high_limit(high_limit_val),
       low_limit(low_limit_val) {}
@@ -342,4 +342,4 @@ IMPL_ANALOG_SUBCLASS_FROMFIELDS(ZenerDiodeRecord)
 #undef IMPL_ANALOG_SUBCLASS_FROMFIELDS
 
 } // namespace records
-} // namespace keysight_log
+} // namespace i3070

@@ -11,8 +11,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_RECORDS_SYSTEMRECORDS_HPP
-#define KEYSIGHT_LOG_RECORDS_SYSTEMRECORDS_HPP
+#ifndef I3070_RECORDS_SYSTEMRECORDS_HPP
+#define I3070_RECORDS_SYSTEMRECORDS_HPP
 
 #include "../core/LogRecord.hpp"
 #include "../enums/LogRecordPrefix.hpp"
@@ -29,7 +29,7 @@
 using nlohmann::json;
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace records {
 
 /**
@@ -322,6 +322,6 @@ public:
 };
 
 } // namespace records
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_RECORDS_SYSTEMRECORDS_HPP
+#endif // I3070_RECORDS_SYSTEMRECORDS_HPP

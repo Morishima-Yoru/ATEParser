@@ -1,5 +1,5 @@
-#include "keysight_log/utils/SafeConversion.hpp"
-#include "keysight_log/utils/ConfigReader.hpp"
+#include "i3070/utils/SafeConversion.hpp"
+#include "i3070/utils/ConfigReader.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <stdexcept>
@@ -8,7 +8,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
 namespace {
@@ -212,4 +212,4 @@ uint64_t safeStoull(const string& str, const string& field_name,
 }
 
 } // namespace core
-} // namespace keysight_log 
+} // namespace i3070 

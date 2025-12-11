@@ -12,8 +12,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_RECORDS_DIGITALRECORDS_HPP
-#define KEYSIGHT_LOG_RECORDS_DIGITALRECORDS_HPP
+#ifndef I3070_RECORDS_DIGITALRECORDS_HPP
+#define I3070_RECORDS_DIGITALRECORDS_HPP
 
 #include "../core/LogRecord.hpp"
 #include "../enums/TestStatus.hpp"
@@ -31,7 +31,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace records {
 
 /**
@@ -597,6 +597,6 @@ struct PinRecord : public core::LogRecord {
 };
 
 } // namespace records
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_RECORDS_DIGITALRECORDS_HPP
+#endif // I3070_RECORDS_DIGITALRECORDS_HPP

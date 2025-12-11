@@ -10,8 +10,8 @@
  * @date 2025-06-19
  */
 
-#ifndef KEYSIGHT_LOG_CONTAINERS_LOGRECORDCONTAINER_HPP
-#define KEYSIGHT_LOG_CONTAINERS_LOGRECORDCONTAINER_HPP
+#ifndef I3070_CONTAINERS_LOGRECORDCONTAINER_HPP
+#define I3070_CONTAINERS_LOGRECORDCONTAINER_HPP
 
 
 #include "../core/LogRecord.hpp"
@@ -19,7 +19,7 @@
 #include <vector>
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace containers {
 
 /**
@@ -79,6 +79,6 @@ private:
 };
 
 } // namespace containers
-} // namespace keysight_log
+} // namespace i3070
 
-#endif // KEYSIGHT_LOG_CONTAINERS_LOGRECORDCONTAINER_HPP
+#endif // I3070_CONTAINERS_LOGRECORDCONTAINER_HPP

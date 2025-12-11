@@ -1,12 +1,12 @@
-#ifndef KEYSIGHT_LOG_CORE_CONFIGREADER_HPP
-#define KEYSIGHT_LOG_CORE_CONFIGREADER_HPP
+#ifndef I3070_CORE_CONFIGREADER_HPP
+#define I3070_CORE_CONFIGREADER_HPP
 
 #include <string>
 #include <unordered_map>
 
 using namespace std;
 
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
 class ConfigReader {
@@ -20,6 +20,6 @@ private:
 };
 
 } // namespace core
-} // namespace keysight_log
+} // namespace i3070
 
 #endif 

@@ -11,7 +11,7 @@
  * @date 2025-06-19
  */
 
-#include "keysight_log/core/FieldValue.hpp"
+#include "i3070/core/FieldValue.hpp"
 #include <nlohmann/json.hpp>
 #include <charconv>
 #include <cctype>
@@ -19,7 +19,7 @@
 using namespace std;
 using json = nlohmann::json;
 
-namespace keysight_log {
+namespace i3070 {
 namespace core {
 
 static bool parseBool(const string& tok, bool& out) {
@@ -101,4 +101,4 @@ char getFieldValueType(const FieldValue& value) {
 }
 
 } // namespace core
-} // namespace keysight_log
+} // namespace i3070
