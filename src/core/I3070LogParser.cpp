@@ -2,11 +2,9 @@
 #include "i3070/containers/LogRecordFactory.hpp"
 #include "i3070/utils/JsonKeys.hpp"
 #include "i3070/utils/ConfigReader.hpp"
-#include <stack>
 #include <stdexcept>
 #include <iostream>
 #include <mutex>
-#include <algorithm>
 #include <string_view>
 #include <fstream>
 #include <sstream>

@@ -10,11 +10,9 @@
  */
 
 #include "i3070/records/AnalogRecords.hpp"
-#include "i3070/core/FieldValue.hpp"
+#include "i3070/utils/JsonKeys.hpp"
 #include "i3070/utils/SafeConversion.hpp"
 #include <nlohmann/json.hpp>
-#include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <cmath>
 

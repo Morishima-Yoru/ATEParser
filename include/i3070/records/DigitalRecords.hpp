@@ -18,14 +18,9 @@
 #include "../core/LogRecord.hpp"
 #include "../enums/TestStatus.hpp"
 #include "../enums/LogRecordPrefix.hpp"
-#include "../enums/FieldType.hpp"
-#include "../utils/JsonKeys.hpp"
-#include "../utils/SafeConversion.hpp"
 #include <string>
 #include <vector>
 #include <optional>
-#include <memory>
-#include <iostream>
 #include <nlohmann/json.hpp>
 
 using namespace std;

@@ -21,12 +21,7 @@
 #include <vector>
 #include "../enums/LogRecordPrefix.hpp"
 #include "../enums/TestStatus.hpp"
-#include "../enums/FieldType.hpp"
-#include "../core/FieldValue.hpp"
 #include "../core/LogRecord.hpp"
-#include "../utils/SafeConversion.hpp"
-#include "../utils/JsonKeys.hpp"
-#include <cstdio>
 #include <nlohmann/json.hpp>
 
 using namespace std;
