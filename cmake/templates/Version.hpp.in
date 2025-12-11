@@ -1,0 +1,45 @@
+#pragma once
+
+#include <string>
+
+#ifdef _WIN32
+  #define DLL_EXPORT __declspec(dllexport)
+#else
+  #define DLL_EXPORT
+#endif
+
+namespace keysight_log {
+namespace core {
+
+/**
+ * @brief Get the full version string (Major.Minor.Patch.Build.hash)
+ * 
+ * @return std::string 
+ */
+std::string get_version();
+
+/**
+ * @brief Get the build hash
+ * 
+ * @return std::string 
+ */
+std::string get_build_hash();
+
+} // namespace core
+} // namespace keysight_log
+
+extern "C" {
+    /**
+     * @brief Get the full version string (C-compatible)
+     * 
+     * @return const char* 
+     */
+    DLL_EXPORT const char* get_version_c();
+
+    /**
+     * @brief Get the build hash (C-compatible)
+     * 
+     * @return const char* 
+     */
+    DLL_EXPORT const char* get_build_hash_c();
+}

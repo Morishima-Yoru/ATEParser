@@ -1089,3 +1089,6 @@ dkms.conf
 .vscode/
 @doc/
 @misc/
+.spec/
+memo.md
+.venv/

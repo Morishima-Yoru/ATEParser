@@ -1,0 +1,28 @@
+#include "keysight_log/core/Version.hpp"
+
+namespace keysight_log {
+namespace core {
+
+static const std::string VERSION_FULL = "@PROJECT_VERSION_FULL@";
+static const std::string BUILD_HASH = "@GIT_HASH@";
+
+std::string get_version() {
+    return VERSION_FULL;
+}
+
+std::string get_build_hash() {
+    return BUILD_HASH;
+}
+
+} // namespace core
+} // namespace keysight_log
+
+extern "C" {
+    const char* get_version_c() {
+        return keysight_log::core::VERSION_FULL.c_str();
+    }
+
+    const char* get_build_hash_c() {
+        return keysight_log::core::BUILD_HASH.c_str();
+    }
+}
