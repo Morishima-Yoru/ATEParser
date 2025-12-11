@@ -11,16 +11,11 @@
  * @date 2025-06-19
  */
 
-#ifndef I3070_ENUMS_LOGRECORDPREFIX_HPP
-#define I3070_ENUMS_LOGRECORDPREFIX_HPP
+#pragma once
 
 #include <string>
-#include <unordered_map>
 
-using namespace std;
-
-namespace i3070 {
-namespace enums {
+namespace i3070::enums {
 
 /**
  * @enum LogRecordPrefix
@@ -98,91 +93,31 @@ enum class LogRecordPrefix {
     // These prefixes provide diagnostic information and failure analysis data
     // ========================================================================
     
-    INDICT,     ///< List of potentially faulty devices record
+    INDICT,     ///< Indictment record for identifying failing components
+    LIM2,       ///< High/low limit record (2 limits)
+    LIM3,       ///< High/low/nominal limit record (3 limits)
     NETV,       ///< Network verification record
     NODE,       ///< Node list record
-    PCHK,       ///< Polarity check test result record
-    PIN,        ///< Pin list record
-    PF,         ///< Pin fault result record
-    PRB,        ///< Probe fault result record
-    RETEST,     ///< Retest clear indication record
-    RPT,        ///< Report record message
-    TJET,       ///< VTEP or TestJet result record
+    PCHK,       ///< Polarity check result record
+    PF,         ///< Pins fail record
+    PIN,        ///< Pin information record
+    PRB,        ///< Probe record? (Found in cpp map)
+    RETEST,     ///< Retest information record
+    RPT,        ///< Report message record
+    TJET,       ///< TestJet test result record
     
     // ========================================================================
-    // LIMIT AND SPECIFICATION RECORDS
-    // These prefixes define test limits and specifications
+    // SPECIAL PREFIXES
+    // These are used for fallback or unknown record types
     // ========================================================================
     
-    LIM2,       ///< Analog test high/low limits record
-    LIM3,       ///< Analog test nominal and tolerance limits record
-    
-    // ========================================================================
-    // UNKNOWN OR CUSTOM RECORDS
-    // This is used for unrecognized or custom prefix types
-    // ========================================================================
-    
-    UNKNOWN     ///< Unknown or unrecognized prefix type
+    UNKNOWN     ///< Unknown or unrecognized record prefix
 };
 
-/**
- * @brief Converts a string prefix to LogRecordPrefix enum value
- * @param prefix_str The string representation of the prefix (e.g., "@A-CAP")
- * @return The corresponding LogRecordPrefix enum value
- * @note Returns LogRecordPrefix::UNKNOWN for unrecognized prefixes
- */
-LogRecordPrefix stringToPrefix(const string& prefix_str);
-
-/**
- * @brief Converts a LogRecordPrefix enum value to its string representation
- * @param prefix The LogRecordPrefix enum value
- * @return The string representation of the prefix (e.g., "@A-CAP")
- */
-string prefixToString(LogRecordPrefix prefix);
-
-/**
- * @brief Checks if a prefix represents an analog test record
- * @param prefix The LogRecordPrefix to check
- * @return true if the prefix is an analog test record, false otherwise
- */
+// Function declarations
+LogRecordPrefix stringToPrefix(const std::string& prefix_str);
+std::string prefixToString(LogRecordPrefix prefix);
 bool isAnalogTestPrefix(LogRecordPrefix prefix);
+// Add other declarations if needed by consumers
 
-/**
- * @brief Checks if a prefix represents a digital test record
- * @param prefix The LogRecordPrefix to check
- * @return true if the prefix is a digital test record, false otherwise
- */
-bool isDigitalTestPrefix(LogRecordPrefix prefix);
-
-/**
- * @brief Checks if a prefix represents a shorts/opens test record
- * @param prefix The LogRecordPrefix to check
- * @return true if the prefix is a shorts/opens test record, false otherwise
- */
-bool isShortsTestPrefix(LogRecordPrefix prefix);
-
-/**
- * @brief Checks if a prefix represents a system or batch record
- * @param prefix The LogRecordPrefix to check
- * @return true if the prefix is a system or batch record, false otherwise
- */
-bool isSystemRecordPrefix(LogRecordPrefix prefix);
-
-/**
- * @brief Gets a human-readable description of the prefix
- * @param prefix The LogRecordPrefix to describe
- * @return A descriptive string explaining what the prefix represents
- */
-string getPrefixDescription(LogRecordPrefix prefix);
-
-/**
- * @brief Gets the category name for a given prefix
- * @param prefix The LogRecordPrefix to categorize
- * @return The category name (e.g., "Analog Test", "Digital Test", etc.)
- */
-string getPrefixCategory(LogRecordPrefix prefix);
-
-} // namespace enums
-} // namespace i3070
-
-#endif // I3070_ENUMS_LOGRECORDPREFIX_HPP
+} // namespace i3070::enums

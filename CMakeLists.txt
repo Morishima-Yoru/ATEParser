@@ -101,7 +101,6 @@ set(ATEPARSER_LIB_SOURCES
     src/records/DigitalRecords.cpp
     src/records/ShortRecords.cpp
     src/records/SystemRecords.cpp
-    src/utils/ConfigReader.cpp
     src/utils/SafeConversion.cpp
     ${RESOURCE_FILE}
 )

@@ -11,19 +11,14 @@
  * @date 2025-06-19
  */
 
-#ifndef I3070_CORE_FIELDVALUE_HPP
-#define I3070_CORE_FIELDVALUE_HPP
-
+#pragma once
 
 #include <variant>
 #include <string>
 #include <vector>
 #include <optional>
 
-using namespace std;
-
-namespace i3070 {
-namespace core {
+namespace i3070::core {
 
 /**
  * @brief Variant to hold any supported log field value
@@ -33,7 +28,7 @@ namespace core {
  * - double : floating-point number  
  * - string : text or raw literal content  
  */
-using FieldValue = variant<bool, int, double, string>;
+using FieldValue = std::variant<bool, int, double, std::string>;
 
 /**
  * @struct ListField
@@ -43,7 +38,7 @@ using FieldValue = variant<bool, int, double, string>;
  */
 struct ListField {
     int count;                          ///< Number of list items  
-    vector<FieldValue> items;      ///< Parsed list entries  
+    std::vector<FieldValue> items;      ///< Parsed list entries  
 
     ListField(): count(0) {}
     explicit ListField(int n): count(n) { items.reserve(n); }
@@ -57,27 +52,20 @@ struct ListField {
  */
 struct LiteralField {
     int length;         ///< Specified byte count  
-    string data;   ///< Raw content, exactly length bytes  
+    std::string data;   ///< Raw content, exactly length bytes  
 
     LiteralField(): length(0) {}
-    explicit LiteralField(const string& s)
+    explicit LiteralField(const std::string& s)
       : length(static_cast<int>(s.size())), data(s) {}
 };
 
-/**
- * @brief Parses a string token into FieldValue based on type hint
- * @param token     The raw string between delimiters  
- * @param typeHint  'b' (bool), 'i' (int), 'f' (fp), 's' (str)  
- * @return Parsed FieldValue or nullopt on failure  
- */
-optional<FieldValue> parseFieldValue(const string& token, char typeHint);
 
 /**
  * @brief Serializes a FieldValue back into its string form
  * @param value  The FieldValue to serialize  
  * @return String representation fitting log format  
  */
-string fieldValueToString(const FieldValue& value);
+std::string fieldValueToString(const FieldValue& value);
 
 /**
  * @brief Determines the type hint character for a FieldValue
@@ -93,12 +81,9 @@ char getFieldValueType(const FieldValue& value);
  * @return Optional<T> containing the value or nullopt if type mismatch  
  */
 template<typename T>
-optional<T> getValue(const FieldValue& v) {
-    if (auto p = get_if<T>(&v)) return *p;
-    return nullopt;
+std::optional<T> getValue(const FieldValue& v) {
+    if (auto p = std::get_if<T>(&v)) return *p;
+    return std::nullopt;
 }
 
-} // namespace core
-} // namespace i3070
-
-#endif // I3070_CORE_FIELDVALUE_HPP
+} // namespace i3070::core

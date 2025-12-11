@@ -15,9 +15,6 @@
 #include "i3070/utils/JsonKeys.hpp"
 #include "i3070/core/FieldValue.hpp"
 #include <nlohmann/json.hpp>
-#include <charconv>
-#include <iostream>
-#include <sstream>
 
 using namespace std;
 using json = nlohmann::json;
@@ -26,8 +23,6 @@ namespace i3070 {
 namespace records {
 
 using core::FieldValue;
-using core::parseFieldValue;
-
 
 // ===================== DigitalTestRecord =====================
 
@@ -231,6 +226,14 @@ void ConnectCheckRecord::fromFields(const vector<string>& fields) {
     device_designator.erase(remove(device_designator.begin(), device_designator.end(), '\n'), device_designator.end());
 }
 
+json ConnectCheckRecord::toJson() const {
+    json j = LogRecord::toJson();
+    j[JSON_KEY_STATUS] = static_cast<int>(test_status);
+    j[JSON_KEY_PIN_COUNT] = pin_count;
+    j[JSON_KEY_DEVICE_DESIGNATOR] = device_designator;
+    return j;
+}
+
 json toJson(const ConnectCheckRecord& rec) {
     return json{
         {JSON_KEY_PREFIX, prefixToString(rec.prefix)},
@@ -247,6 +250,13 @@ void PolarityCheckRecord::fromFields(const vector<string>& fields) {
     if (fields.size() > 1) test_designator = fields[1];
     test_designator.erase(remove(test_designator.begin(), test_designator.end(), '\r'), test_designator.end());
     test_designator.erase(remove(test_designator.begin(), test_designator.end(), '\n'), test_designator.end());
+}
+
+json PolarityCheckRecord::toJson() const {
+    json j = LogRecord::toJson();
+    j[JSON_KEY_STATUS] = static_cast<int>(test_status);
+    j[JSON_KEY_DESIGNATOR] = test_designator;
+    return j;
 }
 
 json toJson(const PolarityCheckRecord& rec) {

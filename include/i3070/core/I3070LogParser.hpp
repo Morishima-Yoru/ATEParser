@@ -1,14 +1,12 @@
-#ifndef I3070_CORE_I3070LOGPARSER_HPP
-#define I3070_CORE_I3070LOGPARSER_HPP
+#pragma once
 
 #include <string>
 #include <memory>
 #include <vector>
 #include <nlohmann/json.hpp>
 #include "i3070/containers/LogRecordContainer.hpp"
-using namespace std;
-namespace i3070 {
-namespace core {
+
+namespace i3070::core {
 
 enum ParseResult : int {
     Success = 0,
@@ -32,41 +30,42 @@ extern "C" DLL_EXPORT ParseResult parse_log_string(const char* log_content, cons
 class I3070LogParser {
 public:
     using json = nlohmann::json;
+    
+    // Debug flags
+    static bool show_parser_debug;
+
     I3070LogParser();
     ~I3070LogParser();
 
     // Parse entire log and return container tree
-    unique_ptr<containers::LogRecordContainer> parse(const string& logText);
+    std::unique_ptr<containers::LogRecordContainer> parse(const std::string& logText);
 
     // Parse single record and return prefix and fields
-    static pair<string, vector<string>> parseFields(const string& recordText);
+    static std::pair<std::string, std::vector<std::string>> parseFields(const std::string& recordText);
 
     // Convert container tree to JSON
     static json containerToJson(const containers::LogRecordContainer& container);
 
 private:
     // Helper: find matching closing brace
-    static size_t findMatchingBrace(const string& text, size_t openPos);
+    static size_t findMatchingBrace(const std::string& text, size_t openPos);
     // Recursively parse nested containers
-    void parseContainer(const string& text, containers::LogRecordContainer& container);
+    void parseContainer(const std::string& text, containers::LogRecordContainer& container);
     
     // @RPT record special parsing methods
-    static pair<string, vector<string>> parseRPTFields(const string& recordText);
-    static pair<string, vector<string>> parseRPTFieldsSimple(const string& recordText);
-    static vector<string> parseRemainingRPTFields(const string& remaining);
+    static std::pair<std::string, std::vector<std::string>> parseRPTFields(const std::string& recordText);
+    static std::pair<std::string, std::vector<std::string>> parseRPTFieldsSimple(const std::string& recordText);
+    static std::vector<std::string> parseRemainingRPTFields(const std::string& remaining);
     
     // @PIN record special parsing methods
-    static pair<string, vector<string>> parsePINFields(const string& recordText);
-    static pair<string, vector<string>> parsePINFieldsSimple(const string& recordText);
-    static vector<string> parseRemainingPINFields(const string& remaining);
+    static std::pair<std::string, std::vector<std::string>> parsePINFields(const std::string& recordText);
+    static std::pair<std::string, std::vector<std::string>> parsePINFieldsSimple(const std::string& recordText);
+    static std::vector<std::string> parseRemainingPINFields(const std::string& remaining);
     
     // Analog Test record special parsing methods
-    static pair<string, vector<string>> parseAnalogTestFields(const string& recordText);
+    static std::pair<std::string, std::vector<std::string>> parseAnalogTestFields(const std::string& recordText);
     // @TS-D record special parsing methods
-    static pair<string, vector<string>> parseTSDFields(const string& recordText);
+    static std::pair<std::string, std::vector<std::string>> parseTSDFields(const std::string& recordText);
 };
 
-} // namespace core
-} // namespace i3070
-
-#endif // I3070_CORE_I3070LOGPARSER_HPP 
+} // namespace i3070::core

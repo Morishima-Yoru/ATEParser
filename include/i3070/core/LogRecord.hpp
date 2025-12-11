@@ -1,53 +1,46 @@
-#ifndef I3070_CORE_LOGRECORD_HPP
-#define I3070_CORE_LOGRECORD_HPP
+#pragma once
 
 #include <string>
 #include <vector>
 #include "../enums/LogRecordPrefix.hpp"
 #include <nlohmann/json.hpp>
 
-using namespace std;
-
-namespace i3070 {
-namespace core {
+namespace i3070::core {
 
 /**
- * @class LogRecord
- * @brief 所有 log record 的抽象基底類別，提供 prefix 與原始資料欄位。
+ * @struct LogRecord
+ * @brief Abstract base structure for all log records, providing prefix and raw data fields.
  */
-class LogRecord {
-public:
+struct LogRecord {
     LogRecord(enums::LogRecordPrefix prefix = enums::LogRecordPrefix::UNKNOWN, 
-              const string& raw_prefix = "")
+              const std::string& raw_prefix = "")
         : prefix(prefix), raw_prefix(raw_prefix), raw_data("") {}
     virtual ~LogRecord() = default;
 
-    // 記錄類型前綴
+    // Log record type prefix
     enums::LogRecordPrefix prefix;
-    // 原始 prefix 字串（如 @PF, @BTEST 等）
-    string raw_prefix;
-    // 原始 log 字串（可選，供 debug 或還原）
-    string raw_data;
+    // Raw prefix string (e.g., @PF, @BTEST)
+    std::string raw_prefix;
+    // Raw log string (optional, for debug or restoration)
+    std::string raw_data;
 
     static bool show_raw_field;
+    static bool show_unimplemented_prefix;
 
-    // 取得 prefix 字串
-    static string prefixToString(enums::LogRecordPrefix prefix);
+    // Get prefix string
+    static std::string prefixToString(enums::LogRecordPrefix prefix);
 
     /**
-     * @brief 由欄位字串自動解析填入成員（子類需 override）
-     * @param fields 由 log 拆解出的欄位字串陣列
+     * @brief Parses fields and populates members (subclasses must override).
+     * @param fields Vector of field strings split from log.
      */
-    virtual void fromFields(const vector<string>& fields);
+    virtual void fromFields(const std::vector<std::string>& fields);
 
     /**
-     * @brief 將 record 轉換為 JSON 格式（子類需 override）
-     * @return JSON 物件
+     * @brief Converts record to JSON format (subclasses must override).
+     * @return JSON object.
      */
     virtual nlohmann::json toJson() const;
 };
 
-} // namespace core
-} // namespace i3070
-
-#endif // I3070_CORE_LOGRECORD_HPP 
+} // namespace i3070::core

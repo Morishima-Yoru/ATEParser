@@ -1,10 +1,8 @@
 #include "i3070/core/I3070LogParser.hpp"
 #include "i3070/containers/LogRecordFactory.hpp"
 #include "i3070/utils/JsonKeys.hpp"
-#include "i3070/utils/ConfigReader.hpp"
 #include <stdexcept>
 #include <iostream>
-#include <mutex>
 #include <string_view>
 #include <fstream>
 #include <sstream>
@@ -16,22 +14,9 @@ using namespace i3070::core;
 using namespace i3070::containers;
 using json = nlohmann::json;
 
+bool I3070LogParser::show_parser_debug = false;
+
 namespace {
-// Singleton ConfigReader, initialized only once
-ConfigReader& getConfig() {
-    static ConfigReader config("config.ini");
-    return config;
-}
-
-bool isShowParser() {
-    static bool cached = false;
-    static once_flag flag;
-    call_once(flag, []() {
-        cached = getConfig().getBool("DEBUG", "SHOW_PARSER", false);
-    });
-    return cached;
-}
-
 // Optimized string trimming without creating temporary strings
 inline void trimInPlace(string& s) {
     // Guard clause: empty string
@@ -418,7 +403,7 @@ void I3070LogParser::parseContainer(const string& text, LogRecordContainer& cont
         size_t firstNested = recordText.find('{');
         size_t fieldEnd = firstNested;
         string_view flatFields = recordText.substr(0, fieldEnd);
-        if (isShowParser()) {
+        if (show_parser_debug) {
             cerr << "[DEBUG] Record found. Raw text: '" << string(flatFields) << "'" << endl;
         }
         auto [prefixStr, fields] = parseFields(string(flatFields)); // parseFields 仍回傳 string
@@ -427,7 +412,7 @@ void I3070LogParser::parseContainer(const string& text, LogRecordContainer& cont
             pos = closePos + 1;
             continue;
         }
-        if (isShowParser()) {
+        if (show_parser_debug) {
             cerr << "[DEBUG] Record found. Prefix: " << prefixStr << ", Raw text: '" << flatFields << "'" << endl;
         }
         auto prefix = LogRecordFactory::stringToPrefix(prefixStr);

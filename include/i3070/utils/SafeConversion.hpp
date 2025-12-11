@@ -10,17 +10,15 @@
  * @date 2025-06-19
  */
 
-#ifndef I3070_CORE_SAFECONVERSION_HPP
-#define I3070_CORE_SAFECONVERSION_HPP
+#pragma once
 
 #include <string>
 #include <optional>
 #include <cstdint>
 
-using namespace std;
+namespace i3070::core {
 
-namespace i3070 {
-namespace core {
+extern bool show_conversion_debug;
 
 /**
  * @brief Safely convert string to integer with detailed error reporting
@@ -30,8 +28,8 @@ namespace core {
  * @param default_value Default value to return if conversion fails
  * @return Converted integer or default value
  */
-int safeStoi(const string& str, const string& field_name, 
-             const string& record_type, int default_value = 0);
+int safeStoi(const std::string& str, const std::string& field_name, 
+             const std::string& record_type, int default_value = 0);
 
              
 /**
@@ -42,8 +40,8 @@ int safeStoi(const string& str, const string& field_name,
  * @param default_value Default value to return if conversion fails
  * @return Converted unsigned longlong or default value
  */
-uint64_t safeStoull(const string& str, const string& field_name, 
-                    const string& record_type, uint64_t default_value = 0);
+uint64_t safeStoull(const std::string& str, const std::string& field_name, 
+                    const std::string& record_type, uint64_t default_value = 0);
 
 /**
  * @brief Safely convert string to double with detailed error reporting
@@ -53,8 +51,8 @@ uint64_t safeStoull(const string& str, const string& field_name,
  * @param default_value Default value to return if conversion fails
  * @return Converted double or default value
  */
-double safeStod(const string& str, const string& field_name, 
-                const string& record_type, double default_value = 0.0);
+double safeStod(const std::string& str, const std::string& field_name, 
+                const std::string& record_type, double default_value = 0.0);
 
 /**
  * @brief Safely convert string to boolean with detailed error reporting
@@ -64,8 +62,8 @@ double safeStod(const string& str, const string& field_name,
  * @param default_value Default value to return if conversion fails
  * @return Converted boolean or default value
  */
-bool safeStob(const string& str, const string& field_name, 
-              const string& record_type, bool default_value = false);
+bool safeStob(const std::string& str, const std::string& field_name, 
+              const std::string& record_type, bool default_value = false);
 
 /**
  * @brief Safely convert string to optional integer with detailed error reporting
@@ -74,8 +72,8 @@ bool safeStob(const string& str, const string& field_name,
  * @param record_type Type of record for error reporting
  * @return optional<int> containing the converted value or nullopt if empty/invalid
  */
-optional<int> safeStoiOptional(const string& str, const string& field_name, 
-                                   const string& record_type);
+std::optional<int> safeStoiOptional(const std::string& str, const std::string& field_name, 
+                                   const std::string& record_type);
 
 /**
  * @brief Safely convert string to optional double with detailed error reporting
@@ -84,10 +82,7 @@ optional<int> safeStoiOptional(const string& str, const string& field_name,
  * @param record_type Type of record for error reporting
  * @return optional<double> containing the converted value or nullopt if empty/invalid
  */
-optional<double> safeStodOptional(const string& str, const string& field_name, 
-                                      const string& record_type);
+std::optional<double> safeStodOptional(const std::string& str, const std::string& field_name, 
+                                      const std::string& record_type);
 
-} // namespace core
-} // namespace i3070
-
-#endif // I3070_CORE_SAFECONVERSION_HPP 
+} // namespace i3070::core

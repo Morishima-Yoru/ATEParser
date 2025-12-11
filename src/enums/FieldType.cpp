@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <cctype>
 #include <charconv>
+#include <optional>
 
 using namespace std;
 using json = nlohmann::json;

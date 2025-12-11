@@ -1,5 +1,4 @@
-#ifndef I3070_CORE_JSONKEYS_HPP
-#define I3070_CORE_JSONKEYS_HPP
+#pragma once
 
 // JSON output key name definitions
 // Use macros for unified management and modification
@@ -110,31 +109,29 @@
 #define JSON_KEY_BOARD_NUMBER     "board_number"
 #define JSON_KEY_PARENT_PANEL_ID  "parent_panel_id"
 
+// ===================== AlarmBoardRecord Fields =====================
+#define JSON_KEY_SERIAL_NUMBER    "serial_number"
+
+// ===================== ArrayRecord Fields =====================
+#define JSON_KEY_FAILURE_COUNT    "failure_count"
+#define JSON_KEY_SAMPLES          "samples"
+
+// ===================== NetVerifyRecord Fields =====================
+#define JSON_KEY_TEST_SYSTEM      "test_system"
+#define JSON_KEY_REPAIR_SYSTEM    "repair_system"
+#define JSON_KEY_SOURCE           "source"
+
+// ===================== NodeListRecord Fields =====================
+#define JSON_KEY_COUNT            "count"
+
 // ===================== PFRecord Fields =====================
-#define JSON_KEY_PF_TOTAL_PINS  "total_pins"
-#define JSON_KEY_PF_FAIL_COUNT  "fail_count"
-#define JSON_KEY_PF_FAIL_TYPE   "fail_type"
-#define JSON_KEY_TOTAL_PINS     "total_pins"
+#define JSON_KEY_TOTAL_PINS       "total_pins"
 
-#define JSON_KEY_PINS           "pins"
+// ===================== BsShortRecord Fields =====================
+#define JSON_KEY_CAUSE            "cause"
+#define JSON_KEY_NODE_LIST        "node_list"
 
-// ===================== Array Record Fields =====================
-#define JSON_KEY_FAILURE_COUNT "failure_count"
-#define JSON_KEY_SAMPLES       "samples"
-
-// ===================== NetVerify Record Fields =====================
-#define JSON_KEY_TEST_SYSTEM   "test_system"
-#define JSON_KEY_REPAIR_SYSTEM "repair_system"
-#define JSON_KEY_SOURCE        "source"
-
-// ===================== NodeList Record Fields =====================
-#define JSON_KEY_COUNT         "count"
-
-// ===================== BoundaryScan Record Fields =====================
-#define JSON_KEY_SHORTS_COUNT  "shorts_count"
-#define JSON_KEY_OPENS_COUNT   "opens_count"
-#define JSON_KEY_CAUSE         "cause"
-#define JSON_KEY_NODE_LIST     "node_list"
+// ===================== BsOpenRecord Fields =====================
 #define JSON_KEY_FIRST_DEVICE_NAME  "first_device_name"
 #define JSON_KEY_FIRST_DEVICE_PIN   "first_device_pin"
 #define JSON_KEY_SECOND_DEVICE_NAME "second_device_name"
@@ -144,8 +141,7 @@
 #define JSON_KEY_EST_RESISTANCE "est_resistance"
 #define JSON_KEY_EST_CAPACITANCE "est_capacitance"
 #define JSON_KEY_EST_INDUCTANCE "est_inductance"
-#define JSON_KEY_EST_MODEL     "est_model"
+#define JSON_KEY_EST_MODEL "est_model"
 
-#define JSON_KEY_SERIAL_NUMBER "serial_number"
-
-#endif // I3070_CORE_JSONKEYS_HPP 
+// ===================== PinRecord Fields =====================
+#define JSON_KEY_PINS "pins"

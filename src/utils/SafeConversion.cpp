@@ -1,9 +1,7 @@
 #include "i3070/utils/SafeConversion.hpp"
-#include "i3070/utils/ConfigReader.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <stdexcept>
-#include <mutex>
 
 using namespace std;
 using json = nlohmann::json;
@@ -11,22 +9,11 @@ using json = nlohmann::json;
 namespace i3070 {
 namespace core {
 
-namespace {
-// 單例 ConfigReader，僅初始化一次
-ConfigReader& getConfig() {
-    static ConfigReader config("config.ini");
-    return config;
-}
+bool show_conversion_debug = false;
 
+namespace {
 bool isShowConversion() {
-    static bool cached = false;
-    static bool initialized = false;
-    static once_flag flag;
-    call_once(flag, []() {
-        cached = getConfig().getBool("DEBUG", "SHOW_CONVERSION", false);
-        initialized = true;
-    });
-    return cached;
+    return show_conversion_debug;
 }
 }
 

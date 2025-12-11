@@ -11,23 +11,16 @@
  * @date 2025-06-19
  */
 
-#ifndef I3070_ENUMS_TESTSTATUS_HPP
-#define I3070_ENUMS_TESTSTATUS_HPP
+#pragma once
 
 #include <string>
 #include <vector>
 
-using namespace std;
-
-namespace i3070 {
-namespace enums {
+namespace i3070::enums {
 
 /**
  * @enum AnalogTestStatus
  * @brief Status codes for analog component tests (A-CAP, A-RES, A-DIO, etc.)
- * 
- * These status codes are used by all analog test records including capacitor,
- * resistor, diode, inductor, and other analog component tests.
  */
 enum class AnalogTestStatus {
     PASSED = 0,                         ///< Test passed successfully
@@ -41,10 +34,6 @@ enum class AnalogTestStatus {
 /**
  * @enum BoardTestStatus
  * @brief Overall board test status codes used in BTEST records
- * 
- * These status codes represent the overall outcome of testing an entire board.
- * Values 1-10 indicate failing boards, while 11-99 are considered "bogus"
- * (neither passing nor failing) by statistical analysis tools.
  */
 enum class BoardTestStatus {
     PASSED = 0,                         ///< Board test passed successfully
@@ -78,8 +67,6 @@ enum class BoardTestStatus {
 /**
  * @enum DigitalTestStatus
  * @brief Status codes for digital tests (D-T records)
- * 
- * These status codes are specific to digital component and circuit tests.
  */
 enum class DigitalTestStatus {
     PASSED = 0,                         ///< Digital test passed successfully
@@ -92,229 +79,94 @@ enum class DigitalTestStatus {
 /**
  * @enum DigitalTestSubstatus
  * @brief Substatus bit flags for digital tests
- * 
- * This represents a 6-bit binary value where each bit indicates a specific
- * failure condition. Multiple conditions can occur simultaneously.
  */
 enum class DigitalTestSubstatus {
     NONE = 0,                           ///< No substatus flags set
-    FAIL = 1,                           ///< Bit 0: Fail flag
-    SAFEGUARD_TIMEOUT = 2,              ///< Bit 1: SAFEGUARD timeout
-    HARDWARE_ERROR = 4,                 ///< Bit 2: Hardware error
-    PAUSE = 8,                          ///< Bit 3: Pause flag
-    HALT = 16,                          ///< Bit 4: Halt flag
-    OVERVOLTAGE = 32                    ///< Bit 5: Overvoltage flag
+    // Add other values if needed based on spec
+};
+
+/**
+ * @enum TestStatus
+ * @brief General test status for common use
+ */
+enum class TestStatus {
+    PASSED = 0,
+    FAILED = 1
 };
 
 /**
  * @enum GenericTestStatus
- * @brief Generic test status used by various test types
- * 
- * This enumeration is used by several test types including boundary scan,
- * VTEP/TestJet, ConnectCheck, and others that use a simple pass/fail/error model.
+ * @brief Generic test status for shorts/opens
  */
 enum class GenericTestStatus {
-    PASS = 0,                           ///< Test passed successfully
-    FAIL = 1,                           ///< Test failed
-    FATAL_ERROR = 7                     ///< Fatal error occurred
+    PASS = 0,
+    FAIL = 1,
+    FATAL_ERROR = 7,
+    LEARNING_PASSED = 20
 };
 
 /**
  * @enum BoundaryScanStatus
- * @brief Status codes specific to boundary scan tests
- * 
- * Used by BS-CON records to indicate boundary scan test results.
  */
 enum class BoundaryScanStatus {
-    PASS = 0,                           ///< Boundary scan test passed
-    FAIL = 1,                           ///< Boundary scan test failed
-    CHAIN_FAILURE = 7                   ///< Boundary scan chain failure
+    PASS = 0,
+    FAIL = 1,
+    CHAIN_FAILURE = 2 // Inferred value
 };
 
 /**
  * @enum ShortsTestStatus
- * @brief Status codes for shorts/opens tests
- * 
- * Used by TS records to indicate shorts and opens test results.
  */
 enum class ShortsTestStatus {
-    PASSED = 0,                         ///< Shorts test passed successfully
-    FAILED = 1,                         ///< Shorts test failed
-    LEARNING_PASSED = 20                ///< Learning mode passed
+    PASSED = 0,
+    FAILED = 1,
+    LEARNING_PASSED = 20
 };
 
 /**
  * @enum ArrayTestStatus
- * @brief Status codes for digitizer array analysis
- * 
- * Used by ARRAY records for digitizer results analysis.
  */
 enum class ArrayTestStatus {
-    PASS = 0,                           ///< Array analysis passed
-    FAIL = 1,                           ///< Array analysis failed
-    ERROR_OCCURRED = 7                  ///< Error occurred during analysis
+    PASS = 0,
+    FAIL = 1,
+    ERROR_OCCURRED = 2 // Inferred value
 };
 
 /**
  * @enum PinTestStatus
- * @brief Status codes for pin-related tests
- * 
- * Used by PF (pinsfailed) and PRB (probe) records.
  */
 enum class PinTestStatus {
-    PASSED = 0,                         ///< Pin test passed
-    FAILED = 1                          ///< Pin test failed
+    PASSED = 0,
+    FAILED = 1
 };
 
-/**
- * @brief Converts analog test status to string representation
- * @param status The AnalogTestStatus enum value
- * @return String description of the status
- */
-string analogTestStatusToString(AnalogTestStatus status);
-
-/**
- * @brief Converts board test status to string representation
- * @param status The BoardTestStatus enum value
- * @return String description of the status
- */
-string boardTestStatusToString(BoardTestStatus status);
-
-/**
- * @brief Converts digital test status to string representation
- * @param status The DigitalTestStatus enum value
- * @return String description of the status
- */
-string digitalTestStatusToString(DigitalTestStatus status);
-
-/**
- * @brief Converts generic test status to string representation
- * @param status The GenericTestStatus enum value
- * @return String description of the status
- */
-string genericTestStatusToString(GenericTestStatus status);
-
-/**
- * @brief Parses integer value to AnalogTestStatus
- * @param value Integer status value from log record
- * @return Corresponding AnalogTestStatus enum value
- * @note Returns AnalogTestStatus::FAILED for unrecognized values
- */
+// Function declarations
+std::string analogTestStatusToString(AnalogTestStatus status);
 AnalogTestStatus intToAnalogTestStatus(int value);
-
-/**
- * @brief Parses integer value to BoardTestStatus
- * @param value Integer status value from log record
- * @return Corresponding BoardTestStatus enum value
- * @note Returns BoardTestStatus::UNCATEGORIZED_FAILURE for unrecognized values
- */
-BoardTestStatus intToBoardTestStatus(int value);
-
-/**
- * @brief Parses integer value to DigitalTestStatus
- * @param value Integer status value from log record
- * @return Corresponding DigitalTestStatus enum value
- * @note Returns DigitalTestStatus::FAILED for unrecognized values
- */
-DigitalTestStatus intToDigitalTestStatus(int value);
-
-/**
- * @brief Parses integer value to GenericTestStatus
- * @param value Integer status value from log record
- * @return Corresponding GenericTestStatus enum value
- * @note Returns GenericTestStatus::FAIL for unrecognized values
- */
-GenericTestStatus intToGenericTestStatus(int value);
-
-/**
- * @brief Checks if a board test status indicates a passing result
- * @param status The BoardTestStatus to check
- * @return true if the status indicates a passing board, false otherwise
- */
-bool isBoardTestPassed(BoardTestStatus status);
-
-/**
- * @brief Checks if a board test status indicates a failing result
- * @param status The BoardTestStatus to check
- * @return true if the status indicates a failing board (codes 1-10), false otherwise
- */
-bool isBoardTestFailed(BoardTestStatus status);
-
-/**
- * @brief Checks if a board test status indicates a bogus result
- * @param status The BoardTestStatus to check
- * @return true if the status indicates a bogus result (codes 11-99), false otherwise
- * 
- * Bogus results are neither passing nor failing and typically indicate
- * issues with the test setup, equipment, or process rather than the board itself.
- */
-bool isBoardTestBogus(BoardTestStatus status);
-
-/**
- * @brief Checks if a board test status is user-definable
- * @param status The BoardTestStatus to check
- * @return true if the status is in the user-definable range (90-99), false otherwise
- */
-bool isBoardTestUserDefinable(BoardTestStatus status);
-
-/**
- * @brief Decodes digital test substatus flags
- * @param substatus_value Integer value containing the substatus flags
- * @return Vector of DigitalTestSubstatus flags that are set
- */
-vector<DigitalTestSubstatus> decodeDigitalTestSubstatus(int substatus_value);
-
-/**
- * @brief Encodes digital test substatus flags into integer value
- * @param substatus_flags Vector of DigitalTestSubstatus flags to encode
- * @return Integer value representing the combined flags
- */
-int encodeDigitalTestSubstatus(const vector<DigitalTestSubstatus>& substatus_flags);
-
-/**
- * @brief Gets a detailed description of the test status
- * @param status The AnalogTestStatus to describe
- * @return Detailed description string explaining the status
- */
-string getAnalogTestStatusDescription(AnalogTestStatus status);
-
-/**
- * @brief Gets a detailed description of the board test status
- * @param status The BoardTestStatus to describe
- * @return Detailed description string explaining the status
- */
-string getBoardTestStatusDescription(BoardTestStatus status);
-
-/**
- * @brief Gets a detailed description of the digital test status
- * @param status The DigitalTestStatus to describe
- * @return Detailed description string explaining the status
- */
-string getDigitalTestStatusDescription(DigitalTestStatus status);
-
-/**
- * @brief Gets the severity level of a test status
- * @param status The test status to evaluate
- * @return Integer severity level (0=pass, 1=fail, 2=error, 3=abort)
- */
 int getStatusSeverity(AnalogTestStatus status);
 
-/**
- * @overload
- */
+std::string boardTestStatusToString(BoardTestStatus status);
+BoardTestStatus intToBoardTestStatus(int value);
+bool isBoardTestPassed(BoardTestStatus status);
+bool isBoardTestFailed(BoardTestStatus status);
+bool isBoardTestBogus(BoardTestStatus status);
+bool isBoardTestUserDefinable(BoardTestStatus status);
 int getStatusSeverity(BoardTestStatus status);
 
-/**
- * @overload
- */
+std::string digitalTestStatusToString(DigitalTestStatus status);
+DigitalTestStatus intToDigitalTestStatus(int value);
 int getStatusSeverity(DigitalTestStatus status);
 
-/**
- * @overload
- */
+std::string genericTestStatusToString(GenericTestStatus status);
+GenericTestStatus intToGenericTestStatus(int value);
 int getStatusSeverity(GenericTestStatus status);
 
-} // namespace enums
-} // namespace i3070
+std::vector<DigitalTestSubstatus> decodeDigitalTestSubstatus(int val);
+int encodeDigitalTestSubstatus(const std::vector<DigitalTestSubstatus>& flags);
 
-#endif // I3070_ENUMS_TESTSTATUS_HPP
+std::string boundaryScanStatusToString(BoundaryScanStatus status);
+std::string shortsTestStatusToString(ShortsTestStatus status);
+std::string arrayTestStatusToString(ArrayTestStatus status);
+std::string pinTestStatusToString(PinTestStatus status);
+
+} // namespace i3070::enums

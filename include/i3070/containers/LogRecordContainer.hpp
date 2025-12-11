@@ -10,17 +10,13 @@
  * @date 2025-06-19
  */
 
-#ifndef I3070_CONTAINERS_LOGRECORDCONTAINER_HPP
-#define I3070_CONTAINERS_LOGRECORDCONTAINER_HPP
-
+#pragma once
 
 #include "../core/LogRecord.hpp"
 #include <memory>
 #include <vector>
-using namespace std;
 
-namespace i3070 {
-namespace containers {
+namespace i3070::containers {
 
 /**
  * @class LogRecordContainer
@@ -42,13 +38,13 @@ public:
      * @brief Construct a container for a given log record.
      * @param record Pointer to the parsed log record object.
      */
-    explicit LogRecordContainer(unique_ptr<core::LogRecord> record);
+    explicit LogRecordContainer(std::unique_ptr<core::LogRecord> record);
 
     /**
      * @brief Add a subrecord container as a child of this node.
      * @param subrecord Unique pointer to the child container.
      */
-    void addSubrecord(unique_ptr<LogRecordContainer> subrecord);
+    void addSubrecord(std::unique_ptr<LogRecordContainer> subrecord);
 
     /**
      * @brief Retrieve the main log record.
@@ -60,7 +56,7 @@ public:
      * @brief Access all child subrecord containers.
      * @return Const reference to vector of child containers.
      */
-    const vector<unique_ptr<LogRecordContainer>>& getSubrecords() const;
+    const std::vector<std::unique_ptr<LogRecordContainer>>& getSubrecords() const;
 
     /**
      * @brief Check if this container has any subrecords.
@@ -74,11 +70,8 @@ public:
     void clearSubrecords();
 
 private:
-    unique_ptr<core::LogRecord> record_;                     ///< Owned main log record  
-    vector<unique_ptr<LogRecordContainer>> subrecords_; ///< Owned subrecord containers  
+    std::unique_ptr<core::LogRecord> record_;                     ///< Owned main log record  
+    std::vector<std::unique_ptr<LogRecordContainer>> subrecords_; ///< Owned subrecord containers  
 };
 
-} // namespace containers
-} // namespace i3070
-
-#endif // I3070_CONTAINERS_LOGRECORDCONTAINER_HPP
+} // namespace i3070::containers

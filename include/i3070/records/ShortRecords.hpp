@@ -12,8 +12,7 @@
  * @date 2025-06-19
  */
 
-#ifndef I3070_RECORDS_SHORTRECORDS_HPP
-#define I3070_RECORDS_SHORTRECORDS_HPP
+#pragma once
 
 #include "../core/LogRecord.hpp"
 #include "../enums/LogRecordPrefix.hpp"
@@ -23,27 +22,11 @@
 #include <optional>
 #include <nlohmann/json.hpp>
 
-using namespace std;
-using json = nlohmann::json;
-
-namespace i3070 {
-namespace records {
+namespace i3070::records {
 
 /**
  * @struct ShortsTestRecord
  * @brief Main shorts test record (@TS)
- * 
- * Describes overall shorts test results, including counts of shorts, opens, and phantoms,
- * and an optional designator. Contains nested subrecords for detailed node reports.
- * 
- * Format: {@TS|test status|shorts count|opens count|phantoms count|test designator}
- *
- * Fields:
- * - test_status: Generic test status (0=pass, 1=fail, 20=learning passed)[1]
- * - shorts_count: Number of unexpected shorts encountered (int, default 0)[2]
- * - opens_count: Number of unexpected opens encountered (int, default 0)[2]
- * - phantoms_count: Number of phantom shorts encountered (int, default 0)[2]
- * - test_designator: Optional file or test identifier (string, default "")[2]
  */
 struct ShortsTestRecord : public core::LogRecord {
     enums::GenericTestStatus test_status;  ///< Overall shorts test status[1]
@@ -60,22 +43,13 @@ struct ShortsTestRecord : public core::LogRecord {
         phantoms_count(0),
         designator("") {}
 
-    void fromFields(const vector<string>& fields) override;
-    json toJson() const override;
+    void fromFields(const std::vector<std::string>& fields) override;
+    nlohmann::json toJson() const override;
 };
 
 /**
  * @struct TsSourceRecord
  * @brief Record for shorts test source information (@TS_S)
- * 
- * Describes a specific source node that exhibited shorts, with nested destination and phantom subrecords.
- * 
- * Format: {@TS-S|shorts count|phantoms count|source node}
- *
- * Fields:
- * - shorts_count: Number of destinations shorted to this source (int, default 0)[2]
- * - phantoms_count: Number of phantom shorts from this source (int, default 0)[2]
- * - source_node: Identifier of the source node (string, default "")[2]
  */
 struct TsSourceRecord : public core::LogRecord {
     int shorts_count;               ///< Number of shorted destinations[2]
@@ -87,78 +61,50 @@ struct TsSourceRecord : public core::LogRecord {
         shorts_count(0),
         phantoms_count(0) {}
 
-    void fromFields(const vector<string>& fields) override;
-    json toJson() const override;
+    void fromFields(const std::vector<std::string>& fields) override;
+    nlohmann::json toJson() const override;
 };
 
 /**
  * @struct TsDestinationRecord
  * @brief Record for destination nodes shorted to a source (@TS_D)
- * 
- * Lists each destination node shorted to a source, along with the deviation value.
- * 
- * Format: {@TS-D\count|node1|deviation1|node2|deviation2|...}
- *
- * Fields:
- * - destination_list: Alternating node IDs and deviation values (string/fp list)[2]
  */
 struct TsDestinationRecord : public core::LogRecord {
-    vector<pair<string,double>> destination_list;  ///< Pairs of destination node and deviation[2]
+    // Matching .cpp implementation: vector of pair<string, double>
+    std::vector<std::pair<std::string, double>> destination_list;
 
-    TsDestinationRecord()
-      : LogRecord(enums::LogRecordPrefix::TS_D) {}
+    TsDestinationRecord() : LogRecord(enums::LogRecordPrefix::TS_D) {}
 
-    void fromFields(const vector<string>& fields) override;
-    json toJson() const override;
+    void fromFields(const std::vector<std::string>& fields) override;
+    nlohmann::json toJson() const override;
 };
 
 /**
  * @struct TsOpenRecord
- * @brief Record for open nodes detected during shorts testing (@TS_O)
- * 
- * Describes a single open node pair and its deviation.
- * 
- * Format: {@TS-O|source node|destination node|deviation}
- *
- * Fields:
- * - source_node: Identifier of the open-source node (string, default "")[2]
- * - destination_node: Identifier of the open-destination node (string, default "")[2]
- * - deviation: Measured deviation value (fp, optional)[2]
+ * @brief Record for opens test result (@TS_O)
  */
 struct TsOpenRecord : public core::LogRecord {
-    std::string source_node;       ///< Source node of open condition[2]
-    std::string destination_node;  ///< Destination node of open condition[2]
-    std::optional<double> deviation; ///< Deviation M - T value[2]
+    std::string source_node;
+    std::string destination_node;
+    std::optional<double> deviation;
 
-    TsOpenRecord()
-      : LogRecord(enums::LogRecordPrefix::TS_O) {}
+    TsOpenRecord() : LogRecord(enums::LogRecordPrefix::TS_O) {}
 
-    void fromFields(const vector<string>& fields) override;
-    json toJson() const override;
+    void fromFields(const std::vector<std::string>& fields) override;
+    nlohmann::json toJson() const override;
 };
 
 /**
  * @struct TsPhantomRecord
- * @brief Record for phantom shorts detected (@TS_P)
- * 
- * Reports a phantom short deviation.
- * 
- * Format: {@TS-P|deviation}
- *
- * Fields:
- * - deviation: Phantom deviation value (fp, optional)[2]
+ * @brief Record for phantom shorts (@TS_P)
  */
 struct TsPhantomRecord : public core::LogRecord {
-    std::optional<double> deviation;  ///< Phantom deviation M - T value[2]
+    std::optional<double> deviation;
 
-    TsPhantomRecord()
-      : LogRecord(enums::LogRecordPrefix::TS_P) {}
+    TsPhantomRecord() : LogRecord(enums::LogRecordPrefix::TS_P) {}
 
-    void fromFields(const vector<string>& fields) override;
-    json toJson() const override;
+    void fromFields(const std::vector<std::string>& fields) override;
+    nlohmann::json toJson() const override;
 };
 
-} // namespace records
-} // namespace i3070
-
-#endif // I3070_RECORDS_SHORTRECORDS_HPP
+} // namespace i3070::records

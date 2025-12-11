@@ -3,7 +3,6 @@
  * @brief Implements parsing, serialization, and type utilities for FieldValue
  *
  * This source defines:
- *  - parseFieldValue(): Convert a token to FieldValue using type hints
  *  - fieldValueToString(): Serialize FieldValue back to string form
  *  - getFieldValueType(): Determine type hint character for a FieldValue
  *
@@ -31,40 +30,6 @@ static bool parseBool(const string& tok, bool& out) {
         return true;
     }
     return false;
-}
-
-optional<FieldValue> parseFieldValue(const string& token, char typeHint) {
-    switch (typeHint) {
-        case 'b': {
-            bool val;
-            if (parseBool(token, val)) {
-                return val;
-            }
-            return nullopt;
-        }
-        case 'i': {
-            int v = 0;
-            auto result = from_chars(token.data(), token.data() + token.size(), v);
-            if (result.ec == errc()) {
-                return v;
-            }
-            return nullopt;
-        }
-        case 'f': {
-            try {
-                double d = stod(token);
-                return d;
-            } catch (...) {
-                return nullopt;
-            }
-        }
-        case 's': {
-            // String fields accept raw content, including empty tokens
-            return token;
-        }
-        default:
-            return nullopt;
-    }
 }
 
 string fieldValueToString(const FieldValue& value) {
