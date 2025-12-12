@@ -9,11 +9,16 @@ if(WIN32)
     
     # Find MinGW bin directory for runtime dependencies
     execute_process(
-        COMMAND ${CMAKE_CXX_COMPILER} -print-prog-name=ld
-        OUTPUT_VARIABLE MINGW_LD_PATH
+        COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libstdc++-6.dll
+        OUTPUT_VARIABLE MINGW_STDCPP_DLL
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-    get_filename_component(MINGW_BIN_DIR "${MINGW_LD_PATH}" DIRECTORY)
+    if (EXISTS "${MINGW_STDCPP_DLL}")
+        get_filename_component(MINGW_BIN_DIR "${MINGW_STDCPP_DLL}" DIRECTORY)
+    else()
+        # Fallback: use compiler's directory
+        get_filename_component(MINGW_BIN_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    endif()
     message(STATUS "MINGW_BIN_DIR: ${MINGW_BIN_DIR}")
     
     # Static link standard libraries to avoid external dependencies (libgcc, libstdc++)
