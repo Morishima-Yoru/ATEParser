@@ -163,7 +163,8 @@ void NodeListRecord::fromFields(const vector<string>& fields) {
     if (fields.size() > 0) {
         string::size_type pos = fields[0].find('\\');
         if (pos != string::npos) {
-            count = core::safeStoi(fields[0], "count", "@NODE", 0);
+            string count_str = fields[0].substr(pos + 1);
+            count = core::safeStoi(count_str, "count", "@NODE", 0);
         } else {
             count = 1;
             nodes.push_back(fields[0]);

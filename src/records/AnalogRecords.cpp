@@ -318,7 +318,7 @@ json AnalogTestRecord::toJson() const {
     return j;
 }
 
-// 其餘子類只需呼叫 AnalogTestRecord::fromFields
+// Other subclasses only need to call AnalogTestRecord::fromFields
 #define IMPL_ANALOG_SUBCLASS_FROMFIELDS(CLASS) \
 void CLASS::fromFields(const vector<string>& fields) { AnalogTestRecord::fromFields(fields); }
 

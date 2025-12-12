@@ -16,6 +16,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <optional>
 
 namespace i3070::enums {
 
@@ -102,5 +103,10 @@ struct LiteralField {
     explicit LiteralField(const std::string& s)
       : length(static_cast<int>(s.size())), data(s) {}
 };
+
+// Function declarations
+FieldType stringToFieldType(const std::string& type_str);
+std::string fieldTypeToString(FieldType field_type);
+std::optional<FieldValue> parseStringToFieldValue(const std::string& value_str, FieldType target_type);
 
 } // namespace i3070::enums

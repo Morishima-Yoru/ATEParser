@@ -333,7 +333,7 @@ pair<string, vector<string>> I3070LogParser::parseTSDFields(const string& record
     }
     size_t backslashPos = recordText.find('\\');
     if (backslashPos == string::npos) {
-        // 沒有 count，直接用一般分割
+        // No count, use normal split directly
         size_t sep = recordText.find('|');
         if (sep == string::npos) {
             return {"@TS-D", {}};
@@ -347,9 +347,9 @@ pair<string, vector<string>> I3070LogParser::parseTSDFields(const string& record
     }
     vector<string> fields;
     fields.reserve(8);
-    // 第一欄: node_count (含在 prefix 內)
+    // First column: node_count (included in prefix)
     fields.emplace_back(recordText, backslashPos, pipePos - backslashPos);
-    // 其餘欄位
+    // Remaining fields
     size_t remainingStart = pipePos + 1;
     if (remainingStart < recordText.size()) {
         auto remainingFields = splitFields(recordText, '|', remainingStart);
@@ -364,14 +364,17 @@ unique_ptr<LogRecordContainer> I3070LogParser::parse(const string& logText) {
         return make_unique<LogRecordContainer>(nullptr);
     }
     
-    // Trim leading whitespace and check if the log starts with '{'
-    size_t firstCharPos = logText.find_first_not_of(" \t\r\n");
-    if (firstCharPos == string::npos || logText[firstCharPos] != '{') {
+    // Find the first occurrence of "{@BATCH"
+    size_t batchPos = logText.find("{@BATCH");
+    if (batchPos == string::npos) {
         throw runtime_error("failed integrity");
     }
 
+    // Skip content before the first batch record
+    size_t effectiveStart = batchPos;
+    
     // Find the end of the first record's flat fields to extract the prefix
-    size_t recordContentStart = firstCharPos + 1;
+    size_t recordContentStart = effectiveStart + 1;
     size_t firstPipePos = logText.find('|', recordContentStart);
     size_t firstBracePos = logText.find('{', recordContentStart);
     size_t flatFieldEnd = (firstPipePos < firstBracePos) ? firstPipePos : firstBracePos;
@@ -386,7 +389,7 @@ unique_ptr<LogRecordContainer> I3070LogParser::parse(const string& logText) {
     }
     
     auto root = make_unique<LogRecordContainer>(nullptr);
-    parseContainer(logText, *root);
+    parseContainer(logText.substr(effectiveStart), *root);
     return root;
 }
 
@@ -397,7 +400,7 @@ void I3070LogParser::parseContainer(const string& text, LogRecordContainer& cont
     while (pos < sv.size()) {
         size_t openPos = sv.find('{', pos);
         if (openPos == string_view::npos) break;
-        size_t closePos = findMatchingBrace(string(sv), openPos); // findMatchingBrace 仍用 string
+        size_t closePos = findMatchingBrace(string(sv), openPos); // findMatchingBrace still uses string
         if (closePos == string_view::npos) throw runtime_error("Unbalanced braces");
         string_view recordText = sv.substr(openPos + 1, closePos - openPos - 1);
         size_t firstNested = recordText.find('{');
@@ -406,7 +409,7 @@ void I3070LogParser::parseContainer(const string& text, LogRecordContainer& cont
         if (show_parser_debug) {
             cerr << "[DEBUG] Record found. Raw text: '" << string(flatFields) << "'" << endl;
         }
-        auto [prefixStr, fields] = parseFields(string(flatFields)); // parseFields 仍回傳 string
+        auto [prefixStr, fields] = parseFields(string(flatFields)); // parseFields still returns string
         trimInPlace(prefixStr);
         if (prefixStr.empty()) {
             pos = closePos + 1;

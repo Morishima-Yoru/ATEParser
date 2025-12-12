@@ -118,6 +118,9 @@ enum class LogRecordPrefix {
 LogRecordPrefix stringToPrefix(const std::string& prefix_str);
 std::string prefixToString(LogRecordPrefix prefix);
 bool isAnalogTestPrefix(LogRecordPrefix prefix);
+bool isDigitalTestPrefix(LogRecordPrefix prefix);
+bool isShortsTestPrefix(LogRecordPrefix prefix);
+bool isSystemRecordPrefix(LogRecordPrefix prefix);
 // Add other declarations if needed by consumers
 
 } // namespace i3070::enums
