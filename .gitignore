@@ -1,6 +1,13 @@
 # Prerequisites
 *.d
 
+# Coverage / gcov files
+*.gcov
+*.gcda
+*.gcno
+coverage/
+.coverage
+
 # Compiled Object files
 *.slo
 *.lo

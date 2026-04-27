@@ -40,6 +40,10 @@ std::expected<T, ConversionFailure> parse_numeric(std::string_view sv) {
         return std::unexpected(ConversionFailure{
             ConversionErrc::empty, std::string{sv}, std::string{type_name_of<T>()}});
     }
+    // std::from_chars rejects a leading '+' for numeric types; normalize it.
+    if (sv.size() > 1 && sv.front() == '+') {
+        sv.remove_prefix(1);
+    }
     T value{};
     auto [ptr, ec] = std::from_chars(sv.data(), sv.data() + sv.size(), value);
     if (ec == std::errc::invalid_argument || ptr != sv.data() + sv.size()) {
@@ -75,11 +79,15 @@ std::expected<bool, ConversionFailure> parse_bool(std::string_view str) {
     if (sv.empty()) {
         return std::unexpected(ConversionFailure{ConversionErrc::empty, std::string{sv}, "bool"});
     }
-    std::string lower(sv);
-    std::transform(lower.begin(), lower.end(), lower.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    if (lower == "1" || lower == "y" || lower == "yes" || lower == "true")  return true;
-    if (lower == "0" || lower == "n" || lower == "no"  || lower == "false") return false;
+    auto iequals = [](std::string_view a, std::string_view b) noexcept {
+        if (a.size() != b.size()) return false;
+        for (std::size_t i = 0; i < a.size(); ++i)
+            if (std::tolower(static_cast<unsigned char>(a[i])) !=
+                std::tolower(static_cast<unsigned char>(b[i]))) return false;
+        return true;
+    };
+    if (sv == "1" || iequals(sv, "y") || iequals(sv, "yes") || iequals(sv, "true"))  return true;
+    if (sv == "0" || iequals(sv, "n") || iequals(sv, "no")  || iequals(sv, "false")) return false;
     return std::unexpected(ConversionFailure{
         ConversionErrc::invalid_syntax, std::string{sv}, "bool"});
 }

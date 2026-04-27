@@ -32,8 +32,9 @@ enum class Prefix {
     unknown,
 };
 
-[[nodiscard]] Prefix      to_prefix(std::string_view s) noexcept;
-[[nodiscard]] std::string to_string(Prefix p);
+[[nodiscard]] Prefix           to_prefix(std::string_view s) noexcept;
+[[nodiscard]] std::string      to_string(Prefix p);
+[[nodiscard]] std::string_view to_string_view(Prefix p) noexcept;
 
 [[nodiscard]] bool is_analog_test(Prefix p)  noexcept;
 [[nodiscard]] bool is_digital_test(Prefix p) noexcept;

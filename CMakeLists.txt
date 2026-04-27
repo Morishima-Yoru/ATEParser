@@ -177,3 +177,16 @@ endif()
 
 enable_testing()
 add_subdirectory(tests)
+
+# ---- Benchmark -----------------------------------------------------------
+add_executable(bench_parse benchmarks/bench_parse.cpp ${ATEPARSER_LIB_SOURCES})
+add_dependencies(bench_parse UpdateVersion)
+target_include_directories(bench_parse PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/third_party
+    ${CMAKE_BINARY_DIR}/include
+)
+target_link_libraries(bench_parse PRIVATE spdlog::spdlog cpptrace::cpptrace)
+set_target_properties(bench_parse PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)

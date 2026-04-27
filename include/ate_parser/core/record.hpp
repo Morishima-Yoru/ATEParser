@@ -67,7 +67,7 @@ template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 /// Parse raw string fields into @p record. Behaviour for an unknown record
 /// (`std::monostate`) is a no-op (with a debug log).
-void parse_into(Record& record, const std::vector<std::string>& fields);
+void parse_into(Record& record, const std::vector<std::string_view>& fields);
 
 /// Serialize @p record to JSON. Empty for `std::monostate`.
 [[nodiscard]] nlohmann::json to_json(const Record& record);

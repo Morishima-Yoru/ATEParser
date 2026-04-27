@@ -9,12 +9,12 @@ using namespace ate::core;
 
 TEST(Parser, EmptyInputThrowsIntegrity) {
     Parser p;
-    EXPECT_THROW(p.parse(""), IntegrityError);
+    EXPECT_THROW({ (void)p.parse(""); }, IntegrityError);
 }
 
 TEST(Parser, MissingBatchThrowsIntegrity) {
     Parser p;
-    EXPECT_THROW(p.parse("{@A-RES|0|1.0E+03}"), IntegrityError);
+    EXPECT_THROW({ (void)p.parse("{@A-RES|0|1.0E+03}"); }, IntegrityError);
 }
 
 TEST(Parser, MinimalBatch) {
@@ -72,9 +72,69 @@ TEST(Parser, ParseFields_AnalogOptionalSubtest) {
     EXPECT_TRUE(pf.fields[2].empty());
 }
 
+TEST(Parser, ParseFields_RptPlain) {
+    auto pf = Parser::parse_fields("@RPT|A|B");
+    EXPECT_EQ(pf.prefix, "@RPT");
+    ASSERT_EQ(pf.fields.size(), 2u);
+    EXPECT_EQ(pf.fields[0], "A");
+    EXPECT_EQ(pf.fields[1], "B");
+}
+
+TEST(Parser, ParseFields_RptLiteralLength) {
+    auto pf = Parser::parse_fields("@RPT~5|HELLO|EXTRA|FIELDS");
+    EXPECT_EQ(pf.prefix, "@RPT");
+    ASSERT_EQ(pf.fields.size(), 4u);
+    EXPECT_EQ(pf.fields[0], "HELLO");
+    EXPECT_TRUE(pf.fields[1].empty());
+    EXPECT_EQ(pf.fields[2], "EXTRA");
+    EXPECT_EQ(pf.fields[3], "FIELDS");
+}
+
+TEST(Parser, ParseFields_RptMalformedLength) {
+    EXPECT_THROW({ (void)Parser::parse_fields("@RPT~X|HELLO"); }, MalformedRecordError);
+}
+
+TEST(Parser, ParseFields_RptMissingPipeAfterLength) {
+    EXPECT_THROW({ (void)Parser::parse_fields("@RPT~5HELLO"); }, MalformedRecordError);
+}
+
 TEST(Parser, ParseFields_Pin) {
     auto pf = Parser::parse_fields("@PIN\\3|P1|P2|P3");
     EXPECT_EQ(pf.prefix, "@PIN");
     ASSERT_EQ(pf.fields.size(), 4u);
     EXPECT_EQ(pf.fields[0], "\\3");
+}
+
+TEST(Parser, ParseFields_PinNoCountSyntax) {
+    auto pf = Parser::parse_fields("@PIN|P1|P2");
+    EXPECT_EQ(pf.prefix, "@PIN");
+    ASSERT_EQ(pf.fields.size(), 2u);
+    EXPECT_EQ(pf.fields[0], "P1");
+    EXPECT_EQ(pf.fields[1], "P2");
+}
+
+TEST(Parser, ParseFields_PinMissingPipeAfterCount) {
+    EXPECT_THROW({ (void)Parser::parse_fields("@PIN\\3NoPipe"); }, MalformedRecordError);
+}
+
+TEST(Parser, ParseFields_TsdWithPipe) {
+    auto pf = Parser::parse_fields("@TS-D|A|B");
+    EXPECT_EQ(pf.prefix, "@TS-D");
+    ASSERT_EQ(pf.fields.size(), 2u);
+    EXPECT_EQ(pf.fields[0], "A");
+    EXPECT_EQ(pf.fields[1], "B");
+}
+
+TEST(Parser, ParseFields_TsdMissingPipeAfterCount) {
+    EXPECT_THROW({ (void)Parser::parse_fields("@TS-D\\0"); }, MalformedRecordError);
+}
+
+TEST(Parser, ParseUnbalancedBracesThrowsMalformed) {
+    Parser p;
+    EXPECT_THROW({ (void)p.parse("{@BATCH|U|R|0|1|TT|S|B|O|C|P|R|PT|PR|VL{@BTEST|BID|0|1700000000|10|0|INFO|0|0|0|1700000010|OK|1|PID"); }, MalformedRecordError);
+}
+
+TEST(Parser, FirstRecordMustBeExactBatch) {
+    Parser p;
+    EXPECT_THROW({ (void)p.parse("{@BATCHX|U|R|0|1|TT|S|B|O|C|P|R|PT|PR|VL}"); }, IntegrityError);
 }

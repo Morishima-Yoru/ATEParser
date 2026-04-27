@@ -15,8 +15,8 @@ namespace ate::core {
 /// Result of splitting a single record's flat-field text into prefix +
 /// individual field strings.
 struct ParsedFields {
-    std::string              prefix;
-    std::vector<std::string> fields;
+    std::string                   prefix;
+    std::vector<std::string_view> fields;
 };
 
 /// Stateless interface for parsing i3070 ICT log content.
@@ -31,7 +31,7 @@ public:
      *    @BATCH record (the i3070 log integrity contract).
      *  - `ate::MalformedRecordError` if a record's braces are unbalanced.
      */
-    [[nodiscard]] RecordNode parse(std::string_view log_text) const;
+    [[nodiscard]] RecordNode parse(std::string_view log_text, bool keep_raw = false) const;
 
     /// Split a single flat record (no enclosing braces) into prefix + fields.
     [[nodiscard]] static ParsedFields parse_fields(std::string_view record_text);

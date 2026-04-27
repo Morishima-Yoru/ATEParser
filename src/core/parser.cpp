@@ -3,6 +3,7 @@
 #include "ate_parser/utils/logging.hpp"
 
 #include <algorithm>
+#include <charconv>
 #include <cstdlib>
 #include <cstring>
 #include <fstream>
@@ -31,8 +32,8 @@ inline bool starts_with(std::string_view text, std::string_view prefix) noexcept
 inline bool is_analog_test_text(std::string_view t) noexcept { return starts_with(t, "@A-"); }
 
 /// Brace-aware splitter -- ignores delimiters that occur within `{...}` regions.
-std::vector<std::string> split_fields(std::string_view sv, char delim, std::size_t start = 0) {
-    std::vector<std::string> out;
+std::vector<std::string_view> split_fields(std::string_view sv, char delim, std::size_t start = 0) {
+    std::vector<std::string_view> out;
     if (sv.empty() || start >= sv.size()) return out;
     out.reserve(16);
     std::size_t pos = start;
@@ -76,17 +77,17 @@ ParsedFields parse_rpt_fields(std::string_view t) {
     }
     int literal_length = 0;
     {
-        std::string len_str{t.substr(tilde + 1, pipe - tilde - 1)};
-        try { literal_length = std::stoi(len_str); }
-        catch (const std::exception&) {
-            throw MalformedRecordError(("Invalid @RPT literal length: " + len_str).c_str());
+        auto len_sv = t.substr(tilde + 1, pipe - tilde - 1);
+        auto [ptr, ec] = std::from_chars(len_sv.data(), len_sv.data() + len_sv.size(), literal_length);
+        if (ec != std::errc{} || ptr != len_sv.data() + len_sv.size()) {
+            throw MalformedRecordError(("Invalid @RPT literal length: " + std::string{len_sv}).c_str());
         }
     }
     const std::size_t lit_start = pipe + 1;
     if (lit_start + static_cast<std::size_t>(literal_length) > t.size()) {
         throw MalformedRecordError("Invalid @RPT format: literal exceeds record size");
     }
-    std::vector<std::string> fields;
+    std::vector<std::string_view> fields;
     fields.reserve(8);
     fields.emplace_back(t.substr(lit_start, literal_length));
     const std::size_t rest = lit_start + literal_length;
@@ -108,7 +109,7 @@ ParsedFields parse_pin_fields(std::string_view t) {
     if (pipe == std::string_view::npos) {
         throw MalformedRecordError("Invalid @PIN format: missing | after count");
     }
-    std::vector<std::string> fields;
+    std::vector<std::string_view> fields;
     fields.reserve(8);
     fields.emplace_back(t.substr(bs, pipe - bs));   // "\count"
     if (pipe + 1 < t.size()) {
@@ -131,7 +132,7 @@ ParsedFields parse_tsd_fields(std::string_view t) {
     if (pipe == std::string_view::npos) {
         throw MalformedRecordError("Invalid @TS-D format: missing | after count");
     }
-    std::vector<std::string> fields;
+    std::vector<std::string_view> fields;
     fields.reserve(8);
     fields.emplace_back(t.substr(bs, pipe - bs));
     if (pipe + 1 < t.size()) {
@@ -147,7 +148,7 @@ ParsedFields parse_analog_fields(std::string_view t) {
     auto sep = t.find('|');
     if (sep == std::string_view::npos) return {std::string{t}, {}};
     std::string prefix{t.substr(0, sep)};
-    std::vector<std::string> fields;
+    std::vector<std::string_view> fields;
     fields.reserve(3);
 
     std::size_t start = sep + 1;
@@ -177,7 +178,7 @@ ParsedFields parse_analog_fields(std::string_view t) {
     return {std::move(prefix), std::move(fields)};
 }
 
-void parse_into_node(std::string_view text, RecordNode& parent) {
+void parse_into_node(std::string_view text, RecordNode& parent, bool keep_raw) {
     std::size_t pos = 0;
     while (pos < text.size()) {
         auto open = text.find('{', pos);
@@ -201,11 +202,11 @@ void parse_into_node(std::string_view text, RecordNode& parent) {
         RecordNode node;
         node.record    = make_record(prefix);
         node.raw_prefix = pf.prefix;
-        node.raw_data   = std::string{flat};
+        if (keep_raw) node.raw_data = std::string{flat};
         parse_into(node.record, pf.fields);
 
         if (first_nested != std::string_view::npos) {
-            parse_into_node(body.substr(first_nested), node);
+            parse_into_node(body.substr(first_nested), node, keep_raw);
         }
         parent.children.push_back(std::move(node));
         pos = close + 1;
@@ -225,11 +226,11 @@ ParsedFields Parser::parse_fields(std::string_view t) {
     if (sep == std::string_view::npos) return {std::string{t}, {}};
 
     std::string prefix{t.substr(0, sep)};
-    std::vector<std::string> fields = split_fields(t, '|', sep + 1);
+    std::vector<std::string_view> fields = split_fields(t, '|', sep + 1);
     return {std::move(prefix), std::move(fields)};
 }
 
-RecordNode Parser::parse(std::string_view log_text) const {
+RecordNode Parser::parse(std::string_view log_text, bool keep_raw) const {
     RecordNode root;  // synthetic monostate root
     if (log_text.empty()) {
         throw IntegrityError("empty log content");
@@ -251,7 +252,7 @@ RecordNode Parser::parse(std::string_view log_text) const {
         throw IntegrityError("failed integrity: first record is not @BATCH");
     }
 
-    parse_into_node(log_text.substr(batch_pos), root);
+    parse_into_node(log_text.substr(batch_pos), root, keep_raw);
     return root;
 }
 
@@ -275,7 +276,7 @@ int parse_string_impl(const char* log_content, const char* dst_filepath,
     *out_json_str = nullptr;
     try {
         Parser parser;
-        auto tree = parser.parse(log_content);
+        auto tree = parser.parse(log_content, keep_raw != 0);
         // Emit the first child (the @BATCH record) at the JSON root, mirroring legacy shape.
         nlohmann::json j;
         if (!tree.children.empty()) j = to_json(tree.children.front(), keep_raw != 0);

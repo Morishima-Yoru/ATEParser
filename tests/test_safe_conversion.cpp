@@ -37,6 +37,22 @@ TEST(SafeConversion, ParseDouble_Ok) {
     EXPECT_DOUBLE_EQ(*v, 3.14);
 }
 
+TEST(SafeConversion, ParseDouble_LeadingPlusScientific) {
+    auto v1 = parse_to<double>("+4.750000E+00");
+    ASSERT_TRUE(v1);
+    EXPECT_DOUBLE_EQ(*v1, 4.75);
+
+    auto v2 = parse_to<double>("+1.200000E+00");
+    ASSERT_TRUE(v2);
+    EXPECT_DOUBLE_EQ(*v2, 1.2);
+}
+
+TEST(SafeConversion, ParseInt_LeadingPlus) {
+    auto v = parse_to<int>("+42");
+    ASSERT_TRUE(v);
+    EXPECT_EQ(*v, 42);
+}
+
 TEST(SafeConversion, ParseUll_Ok) {
     auto v = parse_to<unsigned long long>("18446744073709551615");
     ASSERT_TRUE(v);
