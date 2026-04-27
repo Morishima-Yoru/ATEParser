@@ -1,173 +1,117 @@
-#include <iostream>
+/**
+ * @file main.cpp
+ * @brief Command-line entry point: ATEParserApp.
+ */
+#include "ate_parser/ate_parser.hpp"
+
+#include <cstdlib>
+#include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
-#include <filesystem>
-#include <functional>
-#include <unordered_map>
-#include "i3070/core/I3070LogParser.hpp"
-#include "i3070/core/LogRecord.hpp"
-#include "i3070/utils/SafeConversion.hpp"
+#include <string_view>
 
 namespace fs = std::filesystem;
 
-class ArgParser {
-public:
-    struct Config {
-        bool show_raw = false;
-        bool show_parser = false;
-        bool show_unimplemented = false;
-        bool show_conversion = false;
-        int indent_size = 2;
-        std::string input_file;
-        std::string output_file;
-    };
+namespace {
 
-    ArgParser() {
-        registerFlag("--raw", [](Config& c) { c.show_raw = true; });
-        registerFlag("--show-parser", [](Config& c) { c.show_parser = true; });
-        registerFlag("--show-unimplemented", [](Config& c) { c.show_unimplemented = true; });
-        registerFlag("--show-conversion", [](Config& c) { c.show_conversion = true; });
-        registerFlag("--help", [](Config& c) { printUsage("ATEParserApp"); exit(0); });
-        
-        registerOption("--indent", [](Config& c, const std::string& val) {
-            try {
-                c.indent_size = std::stoi(val);
-            } catch (...) {
-                std::cerr << "Invalid indent size provided.\n";
-                exit(1);
-            }
-        });
-        registerOption("--output", [](Config& c, const std::string& val) {
-            c.output_file = val;
-        });
-    }
-
-    Config parse(int argc, char* argv[]) {
-        Config config;
-        for (int i = 1; i < argc; ++i) {
-            std::string arg = argv[i];
-            
-            // 1. Handle Flags
-            if (flags_.count(arg)) {
-                flags_[arg](config);
-                continue;
-            } 
-            
-            // 2. Handle Options
-            if (options_.count(arg)) {
-                if (i + 1 >= argc) {
-                    std::cerr << "Missing value for " << arg << ".\n";
-                    exit(1);
-                }
-                options_[arg](config, argv[++i]);
-                continue;
-            } 
-            
-            // 3. Handle Input File (or unknown arg)
-            if (config.input_file.empty()) {
-                config.input_file = arg;
-                continue;
-            }
-            
-            // 4. Unknown Argument
-            std::cerr << "Unknown argument: " << arg << "\n";
-            printUsage(argv[0]);
-            exit(1);
-        }
-        return config;
-    }
-
-    static void printUsage(const char* programName) {
-        std::cerr << "Usage: " << programName << " [options] <logfile>\n"
-                  << "Options:\n"
-                  << "  --raw                 Keep raw log fields in JSON output (default: false)\n"
-                  << "  --indent <N>          Set JSON indentation size (default: 2)\n"
-                  << "  --output <file>       Specify output JSON file path\n"
-                  << "  --show-parser         Enable parser trace output\n"
-                  << "  --show-unimplemented  Enable unimplemented prefix warnings\n"
-                  << "  --show-conversion     Enable type conversion debug logs\n"
-                  << "  --help                Show this help message\n";
-    }
-
-private:
-    using FlagHandler = std::function<void(Config&)>;
-    using OptionHandler = std::function<void(Config&, const std::string&)>;
-
-    std::unordered_map<std::string, FlagHandler> flags_;
-    std::unordered_map<std::string, OptionHandler> options_;
-
-    void registerFlag(const std::string& name, FlagHandler handler) {
-        flags_[name] = handler;
-    }
-
-    void registerOption(const std::string& name, OptionHandler handler) {
-        options_[name] = handler;
-    }
+struct CliOptions {
+    bool        keep_raw    = false;
+    int         indent_size = 2;
+    bool        debug       = false;
+    std::string input_file;
+    std::string output_file;
 };
+
+void print_usage(std::string_view program) {
+    std::cerr << "Usage: " << program << " [options] <logfile>\n"
+              << "Options:\n"
+              << "  --raw            Keep raw flat-field text in JSON output\n"
+              << "  --indent <N>     JSON indentation size (default: 2)\n"
+              << "  --output <path>  Output JSON file path\n"
+              << "  --debug          Verbose logging\n"
+              << "  --help           Show this help message\n";
+}
+
+CliOptions parse_args(int argc, char* argv[]) {
+    CliOptions opts;
+    for (int i = 1; i < argc; ++i) {
+        std::string_view a = argv[i];
+        if      (a == "--raw")    opts.keep_raw = true;
+        else if (a == "--debug")  opts.debug    = true;
+        else if (a == "--help")   { print_usage(argv[0]); std::exit(0); }
+        else if (a == "--indent") {
+            if (i + 1 >= argc) { std::cerr << "Missing value for --indent\n"; std::exit(1); }
+            try { opts.indent_size = std::stoi(argv[++i]); }
+            catch (...) { std::cerr << "Invalid --indent value\n"; std::exit(1); }
+        } else if (a == "--output") {
+            if (i + 1 >= argc) { std::cerr << "Missing value for --output\n"; std::exit(1); }
+            opts.output_file = argv[++i];
+        } else if (!a.empty() && a.front() == '-') {
+            std::cerr << "Unknown argument: " << a << "\n";
+            print_usage(argv[0]);
+            std::exit(1);
+        } else if (opts.input_file.empty()) {
+            opts.input_file = a;
+        } else {
+            std::cerr << "Unexpected positional argument: " << a << "\n";
+            std::exit(1);
+        }
+    }
+    return opts;
+}
+
+} // namespace
 
 int main(int argc, char* argv[]) {
     try {
-        if (argc < 2) {
-            ArgParser::printUsage(argv[0]);
-            return 1;
-        }
-
-        ArgParser parser;
-        auto config = parser.parse(argc, argv);
-
-        if (config.input_file.empty()) {
+        if (argc < 2) { print_usage(argv[0]); return 1; }
+        auto opts = parse_args(argc, argv);
+        if (opts.input_file.empty()) {
             std::cerr << "No input file specified.\n";
-            ArgParser::printUsage(argv[0]);
+            print_usage(argv[0]);
             return 1;
         }
+        if (opts.debug) ate::log::set_level(spdlog::level::debug);
 
-        // Apply configuration
-        i3070::core::LogRecord::show_raw_field = config.show_raw;
-        i3070::core::I3070LogParser::show_parser_debug = config.show_parser;
-        i3070::core::LogRecord::show_unimplemented_prefix = config.show_unimplemented;
-        i3070::core::show_conversion_debug = config.show_conversion;
-
-        // Read log file
-        std::ifstream ifs(config.input_file);
+        std::ifstream ifs(opts.input_file);
         if (!ifs) {
-            std::cerr << "Cannot open log file: " << config.input_file << std::endl;
+            std::cerr << "Cannot open log file: " << opts.input_file << '\n';
             return 1;
         }
-        std::stringstream buffer;
-        buffer << ifs.rdbuf();
-        std::string logText = buffer.str();
+        std::stringstream buf;
+        buf << ifs.rdbuf();
 
-        // Create parser and parse log
-        i3070::core::I3070LogParser logParser;
-        auto tree = logParser.parse(logText);
-        
-        // Output JSON with configurable indent
-        auto json = i3070::core::I3070LogParser::containerToJson(*tree);
-        
-        std::string final_output = config.output_file;
-        if (final_output.empty()) {
-            // Drag-and-drop or default behavior: output in same directory as input
-            fs::path inputPath(config.input_file);
-            final_output = (inputPath.parent_path() / inputPath.stem()).string() + ".json";
+        ate::core::Parser parser;
+        auto tree = parser.parse(buf.str());
+
+        nlohmann::json j;
+        if (!tree.children.empty()) j = ate::core::to_json(tree.children.front(), opts.keep_raw);
+        else                        j = nlohmann::json::object();
+
+        std::string out_path = opts.output_file;
+        if (out_path.empty()) {
+            fs::path p(opts.input_file);
+            out_path = (p.parent_path() / p.stem()).string() + ".json";
         }
-
-        std::ofstream ofs(final_output);
+        std::ofstream ofs(out_path);
         if (!ofs) {
-             std::cerr << "Cannot open output file: " << final_output << std::endl;
-             return 1;
+            std::cerr << "Cannot open output file: " << out_path << '\n';
+            return 1;
         }
-        ofs << json.dump(config.indent_size);
-        ofs.close();
-
-        std::cout << "Successfully converted " << config.input_file << " to " << final_output << std::endl;
-
+        ofs << j.dump(opts.indent_size);
+        std::cout << "Successfully converted " << opts.input_file << " to " << out_path << '\n';
         return 0;
+    } catch (const ate::ParseError& e) {
+        std::cerr << "ParseError: " << e.message() << '\n';
+        std::cerr << e.trace().to_string() << '\n';
+        return 2;
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << '\n';
         return 1;
     } catch (...) {
-        std::cerr << "Unknown error occurred." << std::endl;
+        std::cerr << "Unknown error.\n";
         return 1;
     }
 }

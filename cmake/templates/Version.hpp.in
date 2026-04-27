@@ -3,43 +3,19 @@
 #include <string>
 
 #ifdef _WIN32
-  #define DLL_EXPORT __declspec(dllexport)
+  #define ATE_VERSION_API __declspec(dllexport)
 #else
-  #define DLL_EXPORT
+  #define ATE_VERSION_API
 #endif
 
-namespace i3070 {
-namespace core {
+namespace ate::version {
 
-/**
- * @brief Get the full version string (Major.Minor.Patch.Build.hash)
- * 
- * @return std::string 
- */
-std::string get_version();
+std::string full();
+std::string git_hash();
 
-/**
- * @brief Get the build hash
- * 
- * @return std::string 
- */
-std::string get_build_hash();
-
-} // namespace core
-} // namespace i3070
+} // namespace ate::version
 
 extern "C" {
-    /**
-     * @brief Get the full version string (C-compatible)
-     * 
-     * @return const char* 
-     */
-    DLL_EXPORT const char* get_version_c();
-
-    /**
-     * @brief Get the build hash (C-compatible)
-     * 
-     * @return const char* 
-     */
-    DLL_EXPORT const char* get_build_hash_c();
+    ATE_VERSION_API const char* ate_version_full();
+    ATE_VERSION_API const char* ate_version_git_hash();
 }

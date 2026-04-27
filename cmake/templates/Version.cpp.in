@@ -1,28 +1,18 @@
-#include "i3070/core/Version.hpp"
+#include "ate_parser/version.hpp"
 
-namespace i3070 {
-namespace core {
+namespace ate::version {
 
-static const std::string VERSION_FULL = "@PROJECT_VERSION_FULL@";
-static const std::string BUILD_HASH = "@GIT_HASH@";
-
-std::string get_version() {
-    return VERSION_FULL;
+namespace {
+const std::string g_full     = "@PROJECT_VERSION_FULL@";
+const std::string g_git_hash = "@GIT_HASH@";
 }
 
-std::string get_build_hash() {
-    return BUILD_HASH;
-}
+std::string full()     { return g_full; }
+std::string git_hash() { return g_git_hash; }
 
-} // namespace core
-} // namespace i3070
+}
 
 extern "C" {
-    const char* get_version_c() {
-        return i3070::core::VERSION_FULL.c_str();
-    }
-
-    const char* get_build_hash_c() {
-        return i3070::core::BUILD_HASH.c_str();
-    }
+    const char* ate_version_full()     { return ate::version::full().c_str(); }
+    const char* ate_version_git_hash() { return ate::version::git_hash().c_str(); }
 }

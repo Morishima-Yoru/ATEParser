@@ -1,58 +1,50 @@
 include(FetchContent)
 FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    googletest
+    URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
 )
-# For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-enable_testing()
-
-add_executable(
-  unit_tests
-  test_main.cpp
-  test_parser.cpp
-  test_records_analog.cpp
-  test_records_system.cpp
-  test_records_digital.cpp
-  test_records_shorts.cpp
-  test_edge_cases.cpp
-  test_core_utils.cpp
-  ../src/containers/LogRecordContainer.cpp
-  ../src/containers/LogRecordFactory.cpp
-  ../src/core/FieldValue.cpp
-  ../src/core/I3070LogParser.cpp
-  ../src/core/LogRecord.cpp
-  ${CMAKE_BINARY_DIR}/src/core/Version.cpp
-  ../src/enums/FieldType.cpp
-  ../src/enums/LogRecordPrefix.cpp
-  ../src/enums/TestStatus.cpp
-  ../src/records/AnalogRecords.cpp
-  ../src/records/DigitalRecords.cpp
-  ../src/records/ShortRecords.cpp
-  ../src/records/SystemRecords.cpp
-  ../src/utils/SafeConversion.cpp
+# Build sources directly (avoids MinGW DLL export-table edge cases for templates).
+add_executable(unit_tests
+    test_main.cpp
+    test_safe_conversion.cpp
+    test_field_value.cpp
+    test_records_analog.cpp
+    test_records_digital.cpp
+    test_records_shorts.cpp
+    test_records_system.cpp
+    test_parser.cpp
+    test_logging.cpp
+    test_errors.cpp
+    ${CMAKE_SOURCE_DIR}/src/enums/prefix.cpp
+    ${CMAKE_SOURCE_DIR}/src/enums/test_status.cpp
+    ${CMAKE_SOURCE_DIR}/src/enums/field_type.cpp
+    ${CMAKE_SOURCE_DIR}/src/utils/safe_conversion.cpp
+    ${CMAKE_SOURCE_DIR}/src/records/analog.cpp
+    ${CMAKE_SOURCE_DIR}/src/records/digital.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/record.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/record_tree.cpp
+    ${CMAKE_SOURCE_DIR}/src/core/parser.cpp
 )
 
-target_include_directories(unit_tests PRIVATE 
-    ${CMAKE_SOURCE_DIR}/include 
+target_include_directories(unit_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/third_party
     ${CMAKE_BINARY_DIR}/include
 )
-
-target_link_libraries(
-  unit_tests
-  GTest::gtest_main
+target_link_libraries(unit_tests
+    PRIVATE
+        GTest::gtest_main
+        spdlog::spdlog
+        cpptrace::cpptrace
 )
 
-# Enable coverage
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(unit_tests PRIVATE --coverage)
     target_link_options(unit_tests PRIVATE --coverage)
 endif()
-
-add_dependencies(unit_tests UpdateVersion)
 
 include(GoogleTest)
 gtest_discover_tests(unit_tests)
