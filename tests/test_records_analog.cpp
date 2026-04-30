@@ -81,3 +81,38 @@ TEST(Analog, ExpectsLim3) {
     EXPECT_FALSE(records::expects_lim3(enums::Prefix::a_jum));
     EXPECT_THROW(records::expects_lim3(enums::Prefix::batch), std::invalid_argument);
 }
+
+TEST(AnalogTestRecord, JsonWithSubtestDesignator) {
+    auto rec = make_record(enums::Prefix::a_res);
+    auto& r = std::get<records::AnalogTestRecord>(rec);
+    r.test_status = enums::AnalogTestStatus::passed;
+    r.measured_value = 100.5;
+    r.subtest_designator = "SUB_A";
+
+    auto j = to_json(rec);
+    EXPECT_EQ(j["prefix"], "@A-RES");
+    EXPECT_EQ(j["test_status"], 0);
+    EXPECT_DOUBLE_EQ(j["measured_value"].get<double>(), 100.5);
+    EXPECT_EQ(j["subtest_designator"], "SUB_A");
+}
+
+TEST(AnalogTestRecord, JsonWithEmptySubtestDesignator) {
+    auto rec = make_record(enums::Prefix::a_res);
+    auto& r = std::get<records::AnalogTestRecord>(rec);
+    r.test_status = enums::AnalogTestStatus::passed;
+    r.measured_value = 50.0;
+    r.subtest_designator = "";
+
+    auto j = to_json(rec);
+    EXPECT_FALSE(j.contains("subtest_designator"));
+}
+
+TEST(AnalogTestRecord, JsonWithoutOptionals) {
+    auto rec = make_record(enums::Prefix::a_res);
+    auto& r = std::get<records::AnalogTestRecord>(rec);
+    r.test_status = enums::AnalogTestStatus::passed;
+
+    auto j = to_json(rec);
+    EXPECT_FALSE(j.contains("measured_value"));
+    EXPECT_FALSE(j.contains("subtest_designator"));
+}

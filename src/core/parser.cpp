@@ -282,7 +282,10 @@ int parse_string_impl(const char* log_content, const char* dst_filepath,
         if (!tree.children.empty()) j = to_json(tree.children.front(), keep_raw != 0);
         else                        j = nlohmann::json::object();
 
-        const std::string dumped = j.dump(indent);
+        // When indent < 0, emit the most compact JSON form (no whitespace between
+        // tokens). Calling dump() with no arguments uses nlohmann::json's default
+        // compact separators which is the desired hot-path representation.
+        const std::string dumped = (indent < 0) ? j.dump() : j.dump(indent);
         *out_json_str = dup_cstr(dumped);
         if (!*out_json_str) return static_cast<int>(ParseResult::output_error);
 

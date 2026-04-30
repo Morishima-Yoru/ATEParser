@@ -18,6 +18,10 @@ add_executable(unit_tests
     test_records_digital.cpp
     test_records_shorts.cpp
     test_records_system.cpp
+    test_records_coverage.cpp
+    test_record_tree.cpp
+    test_extended_coverage.cpp
+    test_enums.cpp
     test_parser.cpp
     test_logging.cpp
     test_errors.cpp

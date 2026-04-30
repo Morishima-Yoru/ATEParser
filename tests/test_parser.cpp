@@ -138,3 +138,83 @@ TEST(Parser, FirstRecordMustBeExactBatch) {
     Parser p;
     EXPECT_THROW({ (void)p.parse("{@BATCHX|U|R|0|1|TT|S|B|O|C|P|R|PT|PR|VL}"); }, IntegrityError);
 }
+
+TEST(Parser, ParseFields_RPT_LiteralExceedsSize) {
+    EXPECT_THROW(
+        Parser::parse_fields("@RPT~999|short"),
+        MalformedRecordError
+    );
+}
+
+TEST(Parser, ParseFields_TSD_NoBackslash_WithPipe) {
+    auto pf = Parser::parse_fields("@TS-D|0|somedata|extra");
+    EXPECT_EQ(pf.prefix, "@TS-D");
+    ASSERT_GE(pf.fields.size(), 2u);
+    EXPECT_EQ(pf.fields[0], "0");
+}
+
+TEST(Parser, ParseFields_TSD_NoBackslash_NoPipe) {
+    auto pf = Parser::parse_fields("@TS-D");
+    EXPECT_EQ(pf.prefix, "@TS-D");
+    EXPECT_TRUE(pf.fields.empty());
+}
+
+TEST(Parser, ParseFields_Analog_SinglePipe) {
+    auto pf = Parser::parse_fields("@A-RES|0");
+    EXPECT_EQ(pf.prefix, "@A-RES");
+    ASSERT_EQ(pf.fields.size(), 3u);
+    EXPECT_EQ(pf.fields[0], "0");
+}
+
+TEST(Parser, ParseFields_Analog_NoPipe) {
+    auto pf = Parser::parse_fields("@A-RES");
+    EXPECT_EQ(pf.prefix, "@A-RES");
+    EXPECT_TRUE(pf.fields.empty());
+}
+
+TEST(Parser, EmptyPrefixChildSkipped) {
+    Parser p;
+    const std::string log =
+        "{@BATCH|U|R|0|1|TT|S|B|O|C|P|R|PT|PR|VL"
+            "{ }"
+            "{@A-RES|0|100.0}"
+        "}";
+    auto root = p.parse(log);
+    auto& batch = root.children[0];
+    ASSERT_EQ(batch.children.size(), 1u);
+    EXPECT_EQ(prefix_of(batch.children[0].record), enums::Prefix::a_res);
+}
+
+TEST(Parser, ParseFields_Analog_ThreeFields) {
+    auto pf = Parser::parse_fields("@A-RES|0|100.5|sub_test_1");
+    EXPECT_EQ(pf.prefix, "@A-RES");
+    ASSERT_EQ(pf.fields.size(), 3u);
+    EXPECT_EQ(pf.fields[0], "0");
+    EXPECT_EQ(pf.fields[1], "100.5");
+    EXPECT_EQ(pf.fields[2], "sub_test_1");
+}
+
+TEST(Parser, ParseFields_Analog_TwoFieldsWithBrace) {
+    auto pf = Parser::parse_fields("@A-RES|0|100.5{@LIM3|lo|hi|nom}");
+    EXPECT_EQ(pf.prefix, "@A-RES");
+    ASSERT_EQ(pf.fields.size(), 3u);
+    EXPECT_EQ(pf.fields[0], "0");
+    EXPECT_EQ(pf.fields[1], "100.5");
+}
+
+TEST(Parser, FullParse_AnalogWithSubtest) {
+    Parser p;
+    const std::string log =
+        "{@BATCH|U|R|0|1|TT|S|B|O|C|P|R|PT|PR|VL"
+            "{@A-RES|0|55.5|sub_x}"
+        "}";
+    auto root = p.parse(log);
+    auto& batch = root.children[0];
+    ASSERT_EQ(batch.children.size(), 1u);
+    auto& analog = std::get<records::AnalogTestRecord>(batch.children[0].record);
+    EXPECT_EQ(analog.test_status, enums::AnalogTestStatus::passed);
+    ASSERT_TRUE(analog.measured_value.has_value());
+    EXPECT_DOUBLE_EQ(*analog.measured_value, 55.5);
+    ASSERT_TRUE(analog.subtest_designator.has_value());
+    EXPECT_EQ(*analog.subtest_designator, "sub_x");
+}
