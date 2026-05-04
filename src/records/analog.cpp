@@ -1,5 +1,6 @@
 #include "ate_parser/records/analog.hpp"
 #include "ate_parser/utils/errors.hpp"
+#include "ate_parser/utils/record_messages.hpp"
 #include <stdexcept>
 
 namespace ate::records {
@@ -10,7 +11,7 @@ bool Lim3Record::has_symmetric_tolerance() const noexcept {
 
 double Lim3Record::percent_deviation(double measured) const {
     if (nominal_value == 0.0) {
-        throw std::domain_error("Lim3Record::percent_deviation: nominal_value is zero");
+        throw std::domain_error(std::string{ate::rec_msg::k_lim3_zero_nominal});
     }
     return (measured - nominal_value) / nominal_value * 100.0;
 }
@@ -29,7 +30,7 @@ bool expects_lim3(enums::Prefix p) {
         case Prefix::a_nfe: case Prefix::a_npn: case Prefix::a_pfe: case Prefix::a_pnp:
             return false;
         default:
-            throw std::invalid_argument("expects_lim3: not an analog test prefix");
+            throw std::invalid_argument(std::string{ate::rec_msg::k_expects_lim3_bad_prefix});
     }
 }
 

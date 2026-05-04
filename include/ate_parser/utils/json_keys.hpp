@@ -32,6 +32,7 @@ inline constexpr std::string_view subtest_designator  = "subtest_designator";
 
 // Digital
 inline constexpr std::string_view substatus       = "substatus";
+inline constexpr std::string_view test_substatus  = "test_substatus";  // struct field name used in parse diagnostics
 inline constexpr std::string_view failing_vector  = "failing_vector_number";
 
 // Device pin
@@ -91,6 +92,8 @@ inline constexpr std::string_view nominal_value = "nominal_value";
 inline constexpr std::string_view nodes        = "nodes";
 inline constexpr std::string_view technique    = "technique";
 inline constexpr std::string_view device_list  = "device_list";
+inline constexpr std::string_view device_count = "device_count";
+inline constexpr std::string_view group_size   = "group_size";
 
 // BTest
 inline constexpr std::string_view board_id          = "board_id";

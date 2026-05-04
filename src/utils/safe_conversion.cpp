@@ -1,4 +1,5 @@
 #include "ate_parser/utils/safe_conversion.hpp"
+#include "ate_parser/utils/conversion_messages.hpp"
 #include "ate_parser/utils/errors.hpp"
 #include "ate_parser/utils/logging.hpp"
 #include <algorithm>
@@ -7,7 +8,10 @@
 #include <cstdint>
 #include <string>
 #include <system_error>
+#include <type_traits>
 #include <typeinfo>
+
+namespace cm = ate::conv_msg;
 
 namespace ate::utils {
 
@@ -77,7 +81,7 @@ template std::expected<double,             ConversionFailure> parse_to<double>(s
 std::expected<bool, ConversionFailure> parse_bool(std::string_view str) {
     auto sv = trim(str);
     if (sv.empty()) {
-        return std::unexpected(ConversionFailure{ConversionErrc::empty, std::string{sv}, "bool"});
+        return std::unexpected(ConversionFailure{ConversionErrc::empty, std::string{sv}, std::string{cm::k_type_bool}});
     }
     auto iequals = [](std::string_view a, std::string_view b) noexcept {
         if (a.size() != b.size()) return false;
@@ -86,10 +90,10 @@ std::expected<bool, ConversionFailure> parse_bool(std::string_view str) {
                 std::tolower(static_cast<unsigned char>(b[i]))) return false;
         return true;
     };
-    if (sv == "1" || iequals(sv, "y") || iequals(sv, "yes") || iequals(sv, "true"))  return true;
-    if (sv == "0" || iequals(sv, "n") || iequals(sv, "no")  || iequals(sv, "false")) return false;
+    if (sv == cm::k_true_digit  || iequals(sv, cm::k_true_short) || iequals(sv, cm::k_true_yes)  || iequals(sv, cm::k_true_word))  return true;
+    if (sv == cm::k_false_digit || iequals(sv, cm::k_false_short) || iequals(sv, cm::k_false_no)  || iequals(sv, cm::k_false_word)) return false;
     return std::unexpected(ConversionFailure{
-        ConversionErrc::invalid_syntax, std::string{sv}, "bool"});
+        ConversionErrc::invalid_syntax, std::string{sv}, std::string{cm::k_type_bool}});
 }
 
 template <typename T>
@@ -98,7 +102,7 @@ T parse_or_throw(std::string_view str,
                  std::string_view record_type) {
     auto r = parse_to<T>(str);
     if (r) return *r;
-    ATE_LOG_ERROR("safe_conversion: failed to parse '{}' as {} (field='{}', record='{}')",
+    ATE_LOG_ERROR(cm::k_fmt_parse_error,
                   std::string{str}, std::string{type_name_of<T>()},
                   std::string{field_name}, std::string{record_type});
     throw ConversionError(str, type_name_of<T>(), field_name, record_type);
@@ -120,13 +124,13 @@ T parse_or_default(std::string_view str,
                    T default_value) {
     auto sv = trim(str);
     if (sv.empty()) {
-        ATE_LOG_DEBUG("safe_conversion: empty '{}' (record='{}'), using default",
+        ATE_LOG_DEBUG(cm::k_fmt_empty_field,
                       std::string{field_name}, std::string{record_type});
         return default_value;
     }
     auto r = parse_to<T>(sv);
     if (r) return *r;
-    ATE_LOG_WARN("safe_conversion: invalid '{}' (record='{}', raw='{}'), using default",
+    ATE_LOG_WARN(cm::k_fmt_invalid,
                  std::string{field_name}, std::string{record_type}, std::string{sv});
     return default_value;
 }
@@ -146,13 +150,13 @@ bool parse_bool_or_default(std::string_view str,
                            bool default_value) {
     auto sv = trim(str);
     if (sv.empty()) {
-        ATE_LOG_DEBUG("safe_conversion: empty '{}' (record='{}'), using default",
+        ATE_LOG_DEBUG(cm::k_fmt_empty_field,
                       std::string{field_name}, std::string{record_type});
         return default_value;
     }
     auto r = parse_bool(sv);
     if (r) return *r;
-    ATE_LOG_WARN("safe_conversion: invalid bool '{}' (record='{}', raw='{}'), using default",
+    ATE_LOG_WARN(cm::k_fmt_invalid_bool,
                  std::string{field_name}, std::string{record_type}, std::string{sv});
     return default_value;
 }

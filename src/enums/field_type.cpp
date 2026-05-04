@@ -1,8 +1,11 @@
 #include "ate_parser/enums/field_type.hpp"
+#include "ate_parser/utils/enum_messages.hpp"
 #include "ate_parser/utils/safe_conversion.hpp"
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
+
+namespace em = ate::enum_msg;
 
 namespace ate::enums {
 
@@ -17,26 +20,27 @@ std::string to_lower(std::string_view sv) {
 
 FieldType to_field_type(std::string_view s) noexcept {
     auto lower = to_lower(s);
-    if (lower == "bool" || lower == "boolean") return FieldType::boolean;
-    if (lower == "fp" || lower == "float" || lower == "double") return FieldType::fp;
-    if (lower == "int" || lower == "integer") return FieldType::integer;
-    if (lower == "str" || lower == "string") return FieldType::str;
-    if (lower == "list" || lower == "array") return FieldType::list;
-    if (lower == "literal" || lower == "raw") return FieldType::literal;
+    if (lower == em::k_field_bool    || lower == em::k_token_boolean) return FieldType::boolean;
+    if (lower == em::k_field_fp      || lower == em::k_token_float
+                                     || lower == em::k_token_double)  return FieldType::fp;
+    if (lower == em::k_field_int     || lower == em::k_token_integer) return FieldType::integer;
+    if (lower == em::k_field_str     || lower == em::k_token_string)  return FieldType::str;
+    if (lower == em::k_field_list    || lower == em::k_token_array)   return FieldType::list;
+    if (lower == em::k_field_literal || lower == em::k_token_raw)     return FieldType::literal;
     return FieldType::unknown;
 }
 
 std::string to_string(FieldType t) {
     switch (t) {
-        case FieldType::boolean: return "bool";
-        case FieldType::fp:      return "fp";
-        case FieldType::integer: return "int";
-        case FieldType::str:     return "str";
-        case FieldType::list:    return "list";
-        case FieldType::literal: return "literal";
-        case FieldType::unknown: return "unknown";
+        case FieldType::boolean: return std::string{em::k_field_bool};
+        case FieldType::fp:      return std::string{em::k_field_fp};
+        case FieldType::integer: return std::string{em::k_field_int};
+        case FieldType::str:     return std::string{em::k_field_str};
+        case FieldType::list:    return std::string{em::k_field_list};
+        case FieldType::literal: return std::string{em::k_field_literal};
+        case FieldType::unknown: return std::string{em::k_field_unknown};
     }
-    return "unknown";
+    return std::string{em::k_field_unknown};
 }
 
 std::optional<FieldValue> parse_field_value(std::string_view s, FieldType target) {

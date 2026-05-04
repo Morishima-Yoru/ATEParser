@@ -1,6 +1,8 @@
 #include "ate_parser/core/parser.hpp"
+#include "ate_parser/utils/error_messages.hpp"
 #include "ate_parser/utils/errors.hpp"
 #include "ate_parser/utils/logging.hpp"
+#include "ate_parser/utils/protocol_literals.hpp"
 
 #include <algorithm>
 #include <charconv>
@@ -14,6 +16,9 @@
 
 namespace ate::core {
 namespace {
+
+namespace err_msg = ate::err_msg;
+namespace proto   = ate::proto;
 
 inline void trim_in_place(std::string& s) {
     if (s.empty()) return;
@@ -29,7 +34,7 @@ inline bool starts_with(std::string_view text, std::string_view prefix) noexcept
     return text.size() >= prefix.size() && text.compare(0, prefix.size(), prefix) == 0;
 }
 
-inline bool is_analog_test_text(std::string_view t) noexcept { return starts_with(t, "@A-"); }
+inline bool is_analog_test_text(std::string_view t) noexcept { return starts_with(t, proto::k_analog_group); }
 
 /// Brace-aware splitter -- ignores delimiters that occur within `{...}` regions.
 std::vector<std::string_view> split_fields(std::string_view sv, char delim, std::size_t start = 0) {
@@ -69,23 +74,23 @@ ParsedFields parse_rpt_fields(std::string_view t) {
     auto tilde = t.find('~');
     if (tilde == std::string_view::npos) {
         auto fields = split_fields(t, '|', std::min<std::size_t>(t.size(), 5));  // skip "@RPT"
-        return {"@RPT", std::move(fields)};
+        return {std::string{enums::to_string_view(enums::Prefix::rpt)}, std::move(fields)};
     }
     auto pipe = t.find('|', tilde);
     if (pipe == std::string_view::npos) {
-        throw MalformedRecordError("Invalid @RPT format: missing | after literal length");
+        throw MalformedRecordError(std::string{err_msg::k_rpt_missing_pipe});
     }
     int literal_length = 0;
     {
         auto len_sv = t.substr(tilde + 1, pipe - tilde - 1);
         auto [ptr, ec] = std::from_chars(len_sv.data(), len_sv.data() + len_sv.size(), literal_length);
         if (ec != std::errc{} || ptr != len_sv.data() + len_sv.size()) {
-            throw MalformedRecordError(("Invalid @RPT literal length: " + std::string{len_sv}).c_str());
+            throw MalformedRecordError(std::string{err_msg::k_rpt_invalid_length_prefix} + std::string{len_sv});
         }
     }
     const std::size_t lit_start = pipe + 1;
     if (lit_start + static_cast<std::size_t>(literal_length) > t.size()) {
-        throw MalformedRecordError("Invalid @RPT format: literal exceeds record size");
+        throw MalformedRecordError(std::string{err_msg::k_rpt_exceeds_size});
     }
     std::vector<std::string_view> fields;
     fields.reserve(8);
@@ -97,17 +102,17 @@ ParsedFields parse_rpt_fields(std::string_view t) {
                       std::make_move_iterator(more.begin()),
                       std::make_move_iterator(more.end()));
     }
-    return {"@RPT", std::move(fields)};
+    return {std::string{enums::to_string_view(enums::Prefix::rpt)}, std::move(fields)};
 }
 
 ParsedFields parse_pin_fields(std::string_view t) {
     auto bs = t.find('\\');
     if (bs == std::string_view::npos) {
-        return {"@PIN", split_fields(t, '|', std::min<std::size_t>(t.size(), 5))};
+        return {std::string{enums::to_string_view(enums::Prefix::pin)}, split_fields(t, '|', std::min<std::size_t>(t.size(), 5))};
     }
     auto pipe = t.find('|', bs);
     if (pipe == std::string_view::npos) {
-        throw MalformedRecordError("Invalid @PIN format: missing | after count");
+        throw MalformedRecordError(std::string{err_msg::k_pin_missing_pipe});
     }
     std::vector<std::string_view> fields;
     fields.reserve(8);
@@ -118,19 +123,19 @@ ParsedFields parse_pin_fields(std::string_view t) {
                       std::make_move_iterator(more.begin()),
                       std::make_move_iterator(more.end()));
     }
-    return {"@PIN", std::move(fields)};
+    return {std::string{enums::to_string_view(enums::Prefix::pin)}, std::move(fields)};
 }
 
 ParsedFields parse_tsd_fields(std::string_view t) {
     auto bs = t.find('\\');
     if (bs == std::string_view::npos) {
         auto pipe = t.find('|');
-        if (pipe == std::string_view::npos) return {"@TS-D", {}};
-        return {"@TS-D", split_fields(t, '|', pipe + 1)};
+        if (pipe == std::string_view::npos) return {std::string{enums::to_string_view(enums::Prefix::ts_d)}, {}};
+        return {std::string{enums::to_string_view(enums::Prefix::ts_d)}, split_fields(t, '|', pipe + 1)};
     }
     auto pipe = t.find('|', bs);
     if (pipe == std::string_view::npos) {
-        throw MalformedRecordError("Invalid @TS-D format: missing | after count");
+        throw MalformedRecordError(std::string{err_msg::k_tsd_missing_pipe});
     }
     std::vector<std::string_view> fields;
     fields.reserve(8);
@@ -141,7 +146,7 @@ ParsedFields parse_tsd_fields(std::string_view t) {
                       std::make_move_iterator(more.begin()),
                       std::make_move_iterator(more.end()));
     }
-    return {"@TS-D", std::move(fields)};
+    return {std::string{enums::to_string_view(enums::Prefix::ts_d)}, std::move(fields)};
 }
 
 ParsedFields parse_analog_fields(std::string_view t) {
@@ -185,7 +190,7 @@ void parse_into_node(std::string_view text, RecordNode& parent, bool keep_raw) {
         if (open == std::string_view::npos) break;
         auto close = find_matching_brace(text, open);
         if (close == std::string_view::npos) {
-            throw MalformedRecordError("Unbalanced braces in record stream");
+            throw MalformedRecordError(std::string{err_msg::k_unbalanced_braces});
         }
         std::string_view body = text.substr(open + 1, close - open - 1);
         const std::size_t first_nested = body.find('{');
@@ -217,9 +222,9 @@ void parse_into_node(std::string_view text, RecordNode& parent, bool keep_raw) {
 
 ParsedFields Parser::parse_fields(std::string_view t) {
     if (t.empty()) return {"", {}};
-    if (starts_with(t, "@RPT"))    return parse_rpt_fields(t);
-    if (starts_with(t, "@PIN"))    return parse_pin_fields(t);
-    if (starts_with(t, "@TS-D"))   return parse_tsd_fields(t);
+    if (starts_with(t, enums::to_string_view(enums::Prefix::rpt)))  return parse_rpt_fields(t);
+    if (starts_with(t, enums::to_string_view(enums::Prefix::pin)))  return parse_pin_fields(t);
+    if (starts_with(t, enums::to_string_view(enums::Prefix::ts_d))) return parse_tsd_fields(t);
     if (is_analog_test_text(t))    return parse_analog_fields(t);
 
     auto sep = t.find('|');
@@ -233,12 +238,12 @@ ParsedFields Parser::parse_fields(std::string_view t) {
 RecordNode Parser::parse(std::string_view log_text, bool keep_raw) const {
     RecordNode root;  // synthetic monostate root
     if (log_text.empty()) {
-        throw IntegrityError("empty log content");
+        throw IntegrityError(std::string{err_msg::k_empty_log});
     }
 
-    auto batch_pos = log_text.find("{@BATCH");
+    auto batch_pos = log_text.find(proto::k_batch_open_brace);
     if (batch_pos == std::string_view::npos) {
-        throw IntegrityError("failed integrity: no @BATCH record found");
+        throw IntegrityError(std::string{err_msg::k_no_batch_found});
     }
 
     // Validate the first record really is @BATCH (not @BATCH<something>).
@@ -248,8 +253,8 @@ RecordNode Parser::parse(std::string_view log_text, bool keep_raw) const {
     auto end   = std::min(pipe, brace);
     std::string first_prefix{log_text.substr(scan_from, end - scan_from)};
     trim_in_place(first_prefix);
-    if (first_prefix != "@BATCH") {
-        throw IntegrityError("failed integrity: first record is not @BATCH");
+    if (first_prefix != enums::to_string_view(enums::Prefix::batch)) {
+        throw IntegrityError(std::string{err_msg::k_first_not_batch});
     }
 
     parse_into_node(log_text.substr(batch_pos), root, keep_raw);

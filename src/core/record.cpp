@@ -13,21 +13,23 @@
 #include "ate_parser/utils/errors.hpp"
 #include "ate_parser/utils/json_keys.hpp"
 #include "ate_parser/utils/logging.hpp"
+#include "ate_parser/utils/protocol_literals.hpp"
+#include "ate_parser/utils/record_messages.hpp"
 #include "ate_parser/utils/safe_conversion.hpp"
 
 #include <algorithm>
 #include <string>
 #include <string_view>
+#include <type_traits>
 
 using nlohmann::json;
-using ate::utils::parse_or_default;
-using ate::utils::parse_or_throw;
-using ate::utils::parse_to;
 
 namespace ate::core {
 namespace {
 
-namespace jk = ate::json_keys;
+namespace jk      = ate::json_keys;
+namespace proto   = ate::proto;
+namespace rec_msg = ate::rec_msg;
 
 // ---- small string helpers ------------------------------------------------
 
@@ -50,27 +52,27 @@ void parse_record(std::monostate&, const std::vector<std::string_view>&) { /* no
 
 // ---- Limits ---------------------------------------------------------------
 void parse_record(records::Lim2Record& r, const std::vector<std::string_view>& f) {
-    if (f.size() > 0) r.high_limit = parse_or_default<double>(f[0], "high_limit", "@LIM2", 0.0);
-    if (f.size() > 1) r.low_limit  = parse_or_default<double>(f[1], "low_limit",  "@LIM2", 0.0);
+    if (f.size() > 0) r.high_limit = utils::parse_or_default<double>(f[0], jk::high_limit, enums::to_string_view(enums::Prefix::lim2), 0.0);
+    if (f.size() > 1) r.low_limit  = utils::parse_or_default<double>(f[1], jk::low_limit,  enums::to_string_view(enums::Prefix::lim2), 0.0);
 }
 void parse_record(records::Lim3Record& r, const std::vector<std::string_view>& f) {
-    if (f.size() > 0) r.nominal_value = parse_or_default<double>(f[0], "nominal_value", "@LIM3", 0.0);
-    if (f.size() > 1) r.high_limit    = parse_or_default<double>(f[1], "high_limit",    "@LIM3", 0.0);
-    if (f.size() > 2) r.low_limit     = parse_or_default<double>(f[2], "low_limit",     "@LIM3", 0.0);
+    if (f.size() > 0) r.nominal_value = utils::parse_or_default<double>(f[0], jk::nominal_value, enums::to_string_view(enums::Prefix::lim3), 0.0);
+    if (f.size() > 1) r.high_limit    = utils::parse_or_default<double>(f[1], jk::high_limit,    enums::to_string_view(enums::Prefix::lim3), 0.0);
+    if (f.size() > 2) r.low_limit     = utils::parse_or_default<double>(f[2], jk::low_limit,     enums::to_string_view(enums::Prefix::lim3), 0.0);
 }
 
 // ---- Analog test ----------------------------------------------------------
 void parse_record(records::AnalogTestRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) {
-        const int code = parse_or_default<int>(f[0], "test_status", "@ANALOG", 0);
+        const int code = utils::parse_or_default<int>(f[0], jk::test_status, proto::k_analog_context, 0);
         try { r.test_status = enums::to_analog_status(code); }
         catch (const std::out_of_range&) {
             r.test_status = enums::AnalogTestStatus::failed_general;
-            ATE_LOG_WARN("@ANALOG: unknown test_status code {}", code);
+            ATE_LOG_WARN(rec_msg::k_analog_unknown_status, code);
         }
     }
     if (f.size() > 1) {
-        auto v = parse_to<double>(f[1]);
+        auto v = utils::parse_to<double>(f[1]);
         if (v) r.measured_value = *v;
     }
     if (f.size() > 2 && !f[2].empty()) {
@@ -82,16 +84,16 @@ void parse_record(records::AnalogTestRecord& r, const std::vector<std::string_vi
 // ---- Digital --------------------------------------------------------------
 void parse_record(records::DigitalTestRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) {
-        const int code = parse_or_default<int>(f[0], "test_status", "@D-T", 0);
+        const int code = utils::parse_or_default<int>(f[0], jk::test_status, enums::to_string_view(enums::Prefix::d_t), 0);
         try { r.test_status = enums::to_digital_status(code); }
         catch (const std::out_of_range&) { r.test_status = enums::DigitalTestStatus::failed; }
     }
-    if (f.size() > 1) r.test_substatus        = parse_or_default<int>(f[1], "test_substatus", "@D-T", 0);
+    if (f.size() > 1) r.test_substatus        = utils::parse_or_default<int>(f[1], jk::test_substatus, enums::to_string_view(enums::Prefix::d_t), 0);
     if (f.size() > 2) {
-        auto v = parse_to<int>(f[2]);
+        auto v = utils::parse_to<int>(f[2]);
         r.failing_vector_number = v ? std::optional<int>(*v) : std::nullopt;
     }
-    if (f.size() > 3) r.pin_count             = parse_or_default<int>(f[3], "pin_count",      "@D-T", 0);
+    if (f.size() > 3) r.pin_count             = utils::parse_or_default<int>(f[3], jk::pin_count,      enums::to_string_view(enums::Prefix::d_t), 0);
     if (f.size() > 4) r.test_designator       = strip_eol(std::string{f[4]});
 }
 
@@ -115,7 +117,7 @@ void parse_record(records::DevicePinRecord& r, const std::vector<std::string_vie
         if (pos != std::string_view::npos) {
             auto base = field.substr(0, pos);
             r.node_pin_list.push_back(base);
-            const int arr_len = parse_or_default<int>(field.substr(pos + 1), "group_size", "@DPIN", 0);
+            const int arr_len = utils::parse_or_default<int>(field.substr(pos + 1), jk::group_size, enums::to_string_view(enums::Prefix::dpin), 0);
             json arr = json::array();
             for (int j = 0; j < arr_len && (i + 1 + static_cast<std::size_t>(j)) < f.size(); ++j) {
                 arr.push_back(f[i + 1 + j]);
@@ -136,23 +138,23 @@ void parse_record(records::DevicePinRecord& r, const std::vector<std::string_vie
 void parse_record(records::PldProgrammingRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) r.filename               = f[0];
     if (f.size() > 1) r.action                 = f[1];
-    if (f.size() > 2) r.action_return_code     = parse_or_default<int>(f[2], "action_return_code",     "@D-PLD", 0);
+    if (f.size() > 2) r.action_return_code     = utils::parse_or_default<int>(f[2], jk::action_return_code,     enums::to_string_view(enums::Prefix::d_pld), 0);
     if (f.size() > 3) r.result_message         = f[3];
-    if (f.size() > 4) r.player_program_counter = parse_or_default<int>(f[4], "player_program_counter", "@D-PLD", 0);
+    if (f.size() > 4) r.player_program_counter = utils::parse_or_default<int>(f[4], jk::player_program_counter, enums::to_string_view(enums::Prefix::d_pld), 0);
 }
 
 void parse_record(records::ConnectCheckRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) {
-        try { r.test_status = enums::to_generic_status(parse_or_default<int>(f[0], "test_status", "@CCHK", 0)); }
+        try { r.test_status = enums::to_generic_status(utils::parse_or_default<int>(f[0], jk::test_status, enums::to_string_view(enums::Prefix::cchk), 0)); }
         catch (const std::out_of_range&) { r.test_status = enums::GenericTestStatus::fail; }
     }
-    if (f.size() > 1) r.pin_count         = parse_or_default<int>(f[1], "pin_count", "@CCHK", 0);
+    if (f.size() > 1) r.pin_count         = utils::parse_or_default<int>(f[1], jk::pin_count, enums::to_string_view(enums::Prefix::cchk), 0);
     if (f.size() > 2) r.device_designator = strip_eol(std::string{f[2]});
 }
 
 void parse_record(records::PolarityCheckRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) {
-        try { r.test_status = enums::to_generic_status(parse_or_default<int>(f[0], "test_status", "@PCHK", 0)); }
+        try { r.test_status = enums::to_generic_status(utils::parse_or_default<int>(f[0], jk::test_status, enums::to_string_view(enums::Prefix::pchk), 0)); }
         catch (const std::out_of_range&) { r.test_status = enums::GenericTestStatus::fail; }
     }
     if (f.size() > 1) r.test_designator = strip_eol(std::string{f[1]});
@@ -160,10 +162,10 @@ void parse_record(records::PolarityCheckRecord& r, const std::vector<std::string
 
 void parse_record(records::TestJetRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) {
-        try { r.test_status = enums::to_generic_status(parse_or_default<int>(f[0], "test_status", "@TJET", 0)); }
+        try { r.test_status = enums::to_generic_status(utils::parse_or_default<int>(f[0], jk::test_status, enums::to_string_view(enums::Prefix::tjet), 0)); }
         catch (const std::out_of_range&) { r.test_status = enums::GenericTestStatus::fail; }
     }
-    if (f.size() > 1) r.pin_count       = parse_or_default<int>(f[1], "pin_count", "@TJET", 0);
+    if (f.size() > 1) r.pin_count       = utils::parse_or_default<int>(f[1], jk::pin_count, enums::to_string_view(enums::Prefix::tjet), 0);
     if (f.size() > 2) r.test_designator = strip_eol(std::string{f[2]});
 }
 
@@ -176,7 +178,7 @@ void parse_record(records::IndictmentRecord& r, const std::vector<std::string_vi
         auto pos = f[0].find('\\');
         if (pos != std::string_view::npos) {
             r.technique  = f[0].substr(0, pos);
-            device_count = parse_or_default<int>(f[0].substr(pos + 1), "device_count", "@INDICT", 0);
+            device_count = utils::parse_or_default<int>(f[0].substr(pos + 1), jk::device_count, enums::to_string_view(enums::Prefix::indict), 0);
         } else {
             r.technique = f[0];
         }
@@ -185,9 +187,9 @@ void parse_record(records::IndictmentRecord& r, const std::vector<std::string_vi
         r.device_list.emplace_back(f[1 + i]);
     }
     const std::size_t next = 1 + static_cast<std::size_t>(device_count);
-    if (f.size() > next)     { auto v = parse_to<double>(f[next]);     r.est_resistance  = v ? std::optional<double>(*v) : std::nullopt; }
-    if (f.size() > next + 1) { auto v = parse_to<double>(f[next + 1]); r.est_capacitance = v ? std::optional<double>(*v) : std::nullopt; }
-    if (f.size() > next + 2) { auto v = parse_to<double>(f[next + 2]); r.est_inductance  = v ? std::optional<double>(*v) : std::nullopt; }
+    if (f.size() > next)     { auto v = utils::parse_to<double>(f[next]);     r.est_resistance  = v ? std::optional<double>(*v) : std::nullopt; }
+    if (f.size() > next + 1) { auto v = utils::parse_to<double>(f[next + 1]); r.est_capacitance = v ? std::optional<double>(*v) : std::nullopt; }
+    if (f.size() > next + 2) { auto v = utils::parse_to<double>(f[next + 2]); r.est_inductance  = v ? std::optional<double>(*v) : std::nullopt; }
     if (f.size() > next + 3) r.est_model = strip_eol(std::string{f[next + 3]});
 }
 
@@ -197,7 +199,7 @@ void parse_record(records::PinRecord& r, const std::vector<std::string_view>& f)
         std::string_view first = f[0];
         auto pos = first.find('\\');
         auto count_str = (pos == std::string_view::npos) ? first : first.substr(pos + 1);
-        auto v = parse_to<int>(count_str);
+        auto v = utils::parse_to<int>(count_str);
         r.pin_count = v ? std::optional<int>(*v) : std::nullopt;
     }
     for (std::size_t i = 1; i < f.size(); ++i) r.pins.push_back(std::string{f[i]});
@@ -206,18 +208,18 @@ void parse_record(records::PinRecord& r, const std::vector<std::string_view>& f)
 // ---- Shorts ---------------------------------------------------------------
 void parse_record(records::ShortsTestRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) {
-        try { r.test_status = enums::to_generic_status(parse_or_default<int>(f[0], "test_status", "@TS", 0)); }
+        try { r.test_status = enums::to_generic_status(utils::parse_or_default<int>(f[0], jk::test_status, enums::to_string_view(enums::Prefix::ts), 0)); }
         catch (const std::out_of_range&) { r.test_status = enums::GenericTestStatus::fail; }
     }
-    if (f.size() > 1) r.shorts_count   = parse_or_default<int>(f[1], "shorts_count",   "@TS", 0);
-    if (f.size() > 2) r.opens_count    = parse_or_default<int>(f[2], "opens_count",    "@TS", 0);
-    if (f.size() > 3) r.phantoms_count = parse_or_default<int>(f[3], "phantoms_count", "@TS", 0);
+    if (f.size() > 1) r.shorts_count   = utils::parse_or_default<int>(f[1], jk::shorts_count,   enums::to_string_view(enums::Prefix::ts), 0);
+    if (f.size() > 2) r.opens_count    = utils::parse_or_default<int>(f[2], jk::opens_count,    enums::to_string_view(enums::Prefix::ts), 0);
+    if (f.size() > 3) r.phantoms_count = utils::parse_or_default<int>(f[3], jk::phantoms_count, enums::to_string_view(enums::Prefix::ts), 0);
     if (f.size() > 4) r.designator     = strip_eol(std::string{f[4]});
 }
 
 void parse_record(records::TsSourceRecord& r, const std::vector<std::string_view>& f) {
-    if (f.size() > 0) r.shorts_count   = parse_or_default<int>(f[0], "shorts_count",   "@TS-S", 0);
-    if (f.size() > 1) r.phantoms_count = parse_or_default<int>(f[1], "phantoms_count", "@TS-S", 0);
+    if (f.size() > 0) r.shorts_count   = utils::parse_or_default<int>(f[0], jk::shorts_count,   enums::to_string_view(enums::Prefix::ts_s), 0);
+    if (f.size() > 1) r.phantoms_count = utils::parse_or_default<int>(f[1], jk::phantoms_count, enums::to_string_view(enums::Prefix::ts_s), 0);
     if (f.size() > 2) r.source_node    = strip_eol(std::string{f[2]});
 }
 
@@ -225,7 +227,7 @@ void parse_record(records::TsDestinationRecord& r, const std::vector<std::string
     r.destination_list.clear();
     // Field 0 is the "\count" prefix; pairs start at index 1.
     for (std::size_t i = 1; i + 1 < f.size(); i += 2) {
-        const double dev = parse_or_default<double>(f[i + 1], "deviation", "@TS-D", 0.0);
+        const double dev = utils::parse_or_default<double>(f[i + 1], jk::deviation, enums::to_string_view(enums::Prefix::ts_d), 0.0);
         r.destination_list.emplace_back(f[i], dev);
     }
 }
@@ -233,19 +235,19 @@ void parse_record(records::TsDestinationRecord& r, const std::vector<std::string
 void parse_record(records::TsOpenRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) r.source_node      = f[0];
     if (f.size() > 1) r.destination_node = f[1];
-    if (f.size() > 2) { auto v = parse_to<double>(f[2]); r.deviation = v ? std::optional<double>(*v) : std::nullopt; }
+    if (f.size() > 2) { auto v = utils::parse_to<double>(f[2]); r.deviation = v ? std::optional<double>(*v) : std::nullopt; }
 }
 
 void parse_record(records::TsPhantomRecord& r, const std::vector<std::string_view>& f) {
-    if (f.size() > 0) { auto v = parse_to<double>(f[0]); r.deviation = v ? std::optional<double>(*v) : std::nullopt; }
+    if (f.size() > 0) { auto v = utils::parse_to<double>(f[0]); r.deviation = v ? std::optional<double>(*v) : std::nullopt; }
 }
 
 // ---- System ---------------------------------------------------------------
 void parse_record(records::BatchRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0)  r.uut_type              = f[0];
     if (f.size() > 1)  r.uut_type_rev          = f[1];
-    if (f.size() > 2)  r.fixture_id            = parse_or_default<int>(f[2], "fixture_id",      "@BATCH", 0);
-    if (f.size() > 3)  r.testhead_number       = parse_or_default<int>(f[3], "testhead_number", "@BATCH", 1);
+    if (f.size() > 2)  r.fixture_id            = utils::parse_or_default<int>(f[2], jk::fixture_id,      enums::to_string_view(enums::Prefix::batch), 0);
+    if (f.size() > 3)  r.testhead_number       = utils::parse_or_default<int>(f[3], jk::testhead_number, enums::to_string_view(enums::Prefix::batch), 1);
     if (f.size() > 4)  r.testhead_type         = f[4];
     if (f.size() > 5)  r.process_step          = f[5];
     if (f.size() > 6)  r.batch_id              = f[6];
@@ -260,19 +262,19 @@ void parse_record(records::BatchRecord& r, const std::vector<std::string_view>& 
 
 void parse_record(records::BlockRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) r.block_designator = f[0];
-    if (f.size() > 1) r.block_status     = parse_or_default<int>(f[1], "block_status", "@BLOCK", 0);
+    if (f.size() > 1) r.block_status     = utils::parse_or_default<int>(f[1], jk::block_status, enums::to_string_view(enums::Prefix::block), 0);
 }
 
 void parse_record(records::AlarmRecord& r, const std::vector<std::string_view>& f) {
-    if (f.size() > 0) r.alarm_type      = parse_or_default<int>(f[0], "alarm_type",   "@ALM", 1);
-    if (f.size() > 1) r.alarm_status    = (parse_or_default<int>(f[1], "alarm_status","@ALM", 0) != 0);
+    if (f.size() > 0) r.alarm_type      = utils::parse_or_default<int>(f[0], jk::alarm_type,   enums::to_string_view(enums::Prefix::alm), 1);
+    if (f.size() > 1) r.alarm_status    = (utils::parse_or_default<int>(f[1], jk::alarm_status, enums::to_string_view(enums::Prefix::alm), 0) != 0);
     if (f.size() > 2) r.datetime        = f[2];
     if (f.size() > 3) r.board_type      = f[3];
     if (f.size() > 4) r.board_rev       = f[4];
-    if (f.size() > 5) { auto v = parse_to<int>(f[5]); r.alarm_limit    = v ? std::optional<int>(*v) : std::nullopt; }
-    if (f.size() > 6) { auto v = parse_to<int>(f[6]); r.detected_value = v ? std::optional<int>(*v) : std::nullopt; }
+    if (f.size() > 5) { auto v = utils::parse_to<int>(f[5]); r.alarm_limit    = v ? std::optional<int>(*v) : std::nullopt; }
+    if (f.size() > 6) { auto v = utils::parse_to<int>(f[6]); r.detected_value = v ? std::optional<int>(*v) : std::nullopt; }
     if (f.size() > 7) r.controller      = f[7];
-    if (f.size() > 8) r.testhead_number = parse_or_default<int>(f[8], "testhead_number", "@ALM", 1);
+    if (f.size() > 8) r.testhead_number = utils::parse_or_default<int>(f[8], jk::testhead_number, enums::to_string_view(enums::Prefix::alm), 1);
 }
 
 void parse_record(records::AlarmBoardRecord& r, const std::vector<std::string_view>& f) {
@@ -282,16 +284,16 @@ void parse_record(records::AlarmBoardRecord& r, const std::vector<std::string_vi
 
 void parse_record(records::ArrayRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) r.designator = f[0];
-    if (f.size() > 1) r.status     = parse_or_default<int>(f[1], "status", "@ARRAY", 0);
-    if (f.size() > 2) { auto v = parse_to<int>(f[2]); r.failure_count = v ? std::optional<int>(*v) : std::nullopt; }
-    if (f.size() > 3) { auto v = parse_to<int>(f[3]); r.samples       = v ? std::optional<int>(*v) : std::nullopt; }
+    if (f.size() > 1) r.status     = utils::parse_or_default<int>(f[1], jk::status, enums::to_string_view(enums::Prefix::array), 0);
+    if (f.size() > 2) { auto v = utils::parse_to<int>(f[2]); r.failure_count = v ? std::optional<int>(*v) : std::nullopt; }
+    if (f.size() > 3) { auto v = utils::parse_to<int>(f[3]); r.samples       = v ? std::optional<int>(*v) : std::nullopt; }
 }
 
 void parse_record(records::NetVerifyRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) r.datetime      = f[0];
     if (f.size() > 1) r.test_system   = f[1];
     if (f.size() > 2) r.repair_system = f[2];
-    if (f.size() > 3) r.source        = (parse_or_default<int>(f[3], "source", "@NETV", 0) != 0);
+    if (f.size() > 3) r.source        = (utils::parse_or_default<int>(f[3], jk::source, enums::to_string_view(enums::Prefix::netv), 0) != 0);
 }
 
 void parse_record(records::NodeListRecord& r, const std::vector<std::string_view>& f) {
@@ -299,7 +301,7 @@ void parse_record(records::NodeListRecord& r, const std::vector<std::string_view
     if (f.empty()) return;
     auto pos = f[0].find('\\');
     if (pos != std::string_view::npos) {
-        r.count = parse_or_default<int>(f[0].substr(pos + 1), "count", "@NODE", 0);
+        r.count = utils::parse_or_default<int>(f[0].substr(pos + 1), jk::count, enums::to_string_view(enums::Prefix::node), 0);
     } else {
         r.count = 1;
         r.nodes.push_back(std::string{f[0]});
@@ -322,8 +324,8 @@ void parse_record(records::RetestRecord& r, const std::vector<std::string_view>&
 
 void parse_record(records::PfRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) r.designator  = f[0];
-    if (f.size() > 1) { auto v = parse_to<int>(f[1]); r.test_status = v ? std::optional<int>(*v) : std::nullopt; }
-    if (f.size() > 2) { auto v = parse_to<int>(f[2]); r.total_pins  = v ? std::optional<int>(*v) : std::nullopt; }
+    if (f.size() > 1) { auto v = utils::parse_to<int>(f[1]); r.test_status = v ? std::optional<int>(*v) : std::nullopt; }
+    if (f.size() > 2) { auto v = utils::parse_to<int>(f[2]); r.total_pins  = v ? std::optional<int>(*v) : std::nullopt; }
 }
 
 void parse_record(records::BsShortRecord& r, const std::vector<std::string_view>& f) {
@@ -333,11 +335,11 @@ void parse_record(records::BsShortRecord& r, const std::vector<std::string_view>
     auto pos = first.find('\\');
     if (pos != std::string_view::npos) {
         r.cause = first.substr(0, pos);
-        auto v  = parse_to<int>(first.substr(pos + 1));
+        auto v  = utils::parse_to<int>(first.substr(pos + 1));
         r.shorts_count = v ? std::optional<int>(*v) : std::nullopt;
     } else {
         r.cause.clear();
-        auto v = parse_to<int>(first);
+        auto v = utils::parse_to<int>(first);
         r.shorts_count = v ? std::optional<int>(*v) : std::nullopt;
     }
     for (std::size_t i = 1; i < f.size(); ++i) r.node_list.push_back(std::string{f[i]});
@@ -352,24 +354,24 @@ void parse_record(records::BsOpenRecord& r, const std::vector<std::string_view>&
 
 void parse_record(records::BoundaryScanRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0) r.test_designator = f[0];
-    if (f.size() > 1) r.status          = parse_or_default<int>(f[1], "status", "@BS-CON", 0);
-    if (f.size() > 2) { auto v = parse_to<int>(f[2]); r.shorts_count = v ? std::optional<int>(*v) : std::nullopt; }
-    if (f.size() > 3) { auto v = parse_to<int>(f[3]); r.opens_count  = v ? std::optional<int>(*v) : std::nullopt; }
+    if (f.size() > 1) r.status          = utils::parse_or_default<int>(f[1], jk::status, enums::to_string_view(enums::Prefix::bs_con), 0);
+    if (f.size() > 2) { auto v = utils::parse_to<int>(f[2]); r.shorts_count = v ? std::optional<int>(*v) : std::nullopt; }
+    if (f.size() > 3) { auto v = utils::parse_to<int>(f[3]); r.opens_count  = v ? std::optional<int>(*v) : std::nullopt; }
 }
 
 void parse_record(records::BTestRecord& r, const std::vector<std::string_view>& f) {
     if (f.size() > 0)  r.board_id         = f[0];
-    if (f.size() > 1)  r.test_status      = parse_or_default<int>(f[1], "test_status", "@BTEST", 0);
-    if (f.size() > 2)  r.start_datetime   = parse_or_default<unsigned long long>(f[2], "start_datetime", "@BTEST", 0ull);
-    if (f.size() > 3)  r.duration         = parse_or_default<int>(f[3], "duration", "@BTEST", 0);
-    if (f.size() > 4)  r.multiple_test    = utils::parse_bool_or_default(f[4], "multiple_test", "@BTEST", false);
+    if (f.size() > 1)  r.test_status      = utils::parse_or_default<int>(f[1], jk::test_status,    enums::to_string_view(enums::Prefix::btest), 0);
+    if (f.size() > 2)  r.start_datetime   = utils::parse_or_default<unsigned long long>(f[2], jk::start_datetime, enums::to_string_view(enums::Prefix::btest), 0ull);
+    if (f.size() > 3)  r.duration         = utils::parse_or_default<int>(f[3], jk::duration,        enums::to_string_view(enums::Prefix::btest), 0);
+    if (f.size() > 4)  r.multiple_test    = utils::parse_bool_or_default(f[4], jk::multiple_test,  enums::to_string_view(enums::Prefix::btest), false);
     if (f.size() > 5)  r.log_level        = f[5];
-    if (f.size() > 6)  { auto v = parse_to<int>(f[6]); r.log_set = v ? std::optional<int>(*v) : std::nullopt; }
-    if (f.size() > 7)  r.learning         = utils::parse_bool_or_default(f[7], "learning",   "@BTEST", false);
-    if (f.size() > 8)  r.known_good       = utils::parse_bool_or_default(f[8], "known_good", "@BTEST", false);
-    if (f.size() > 9)  r.end_datetime     = parse_or_default<unsigned long long>(f[9], "end_datetime", "@BTEST", 0ull);
+    if (f.size() > 6)  { auto v = utils::parse_to<int>(f[6]); r.log_set = v ? std::optional<int>(*v) : std::nullopt; }
+    if (f.size() > 7)  r.learning         = utils::parse_bool_or_default(f[7], jk::learning,   enums::to_string_view(enums::Prefix::btest), false);
+    if (f.size() > 8)  r.known_good       = utils::parse_bool_or_default(f[8], jk::known_good, enums::to_string_view(enums::Prefix::btest), false);
+    if (f.size() > 9)  r.end_datetime     = utils::parse_or_default<unsigned long long>(f[9], jk::end_datetime,   enums::to_string_view(enums::Prefix::btest), 0ull);
     if (f.size() > 10) r.status_qualifier = f[10];
-    if (f.size() > 11) r.board_number     = parse_or_default<int>(f[11], "board_number", "@BTEST", 0);
+    if (f.size() > 11) r.board_number     = utils::parse_or_default<int>(f[11], jk::board_number, enums::to_string_view(enums::Prefix::btest), 0);
     if (f.size() > 12) r.parent_panel_id  = strip_eol(std::string{f[12]});
 }
 
