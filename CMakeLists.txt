@@ -42,6 +42,9 @@ set(FETCHCONTENT_QUIET OFF)
 
 set(SPDLOG_FMT_EXTERNAL  OFF CACHE BOOL "" FORCE)
 set(SPDLOG_BUILD_SHARED  OFF CACHE BOOL "" FORCE)
+if(UNIX AND NOT WIN32)
+    set(SPDLOG_BUILD_PIC ON CACHE BOOL "" FORCE)
+endif()
 set(SPDLOG_INSTALL       OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
