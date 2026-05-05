@@ -141,7 +141,7 @@ TEST(Parser, FirstRecordMustBeExactBatch) {
 
 TEST(Parser, ParseFields_RPT_LiteralExceedsSize) {
     EXPECT_THROW(
-        Parser::parse_fields("@RPT~999|short"),
+        { (void)Parser::parse_fields("@RPT~999|short"); },
         MalformedRecordError
     );
 }

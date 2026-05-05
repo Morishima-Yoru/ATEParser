@@ -73,13 +73,13 @@ TEST(Lim3Record, ParseAndHelpers) {
 
 TEST(Lim3Record, PercentDeviationZeroNominalThrows) {
     records::Lim3Record r{};
-    EXPECT_THROW(r.percent_deviation(1.0), std::domain_error);
+    EXPECT_THROW({ (void)r.percent_deviation(1.0); }, std::domain_error);
 }
 
 TEST(Analog, ExpectsLim3) {
     EXPECT_TRUE(records::expects_lim3(enums::Prefix::a_cap));
     EXPECT_FALSE(records::expects_lim3(enums::Prefix::a_jum));
-    EXPECT_THROW(records::expects_lim3(enums::Prefix::batch), std::invalid_argument);
+    EXPECT_THROW({ (void)records::expects_lim3(enums::Prefix::batch); }, std::invalid_argument);
 }
 
 TEST(AnalogTestRecord, JsonWithSubtestDesignator) {

@@ -132,7 +132,7 @@ TEST(TestStatus, AnalogStatusRoundTrip) {
     EXPECT_EQ(to_analog_status(3),  AnalogTestStatus::failed_detector_timeout);
     EXPECT_EQ(to_analog_status(7),  AnalogTestStatus::failed_general);
     EXPECT_EQ(to_analog_status(11), AnalogTestStatus::aborted_by_operator);
-    EXPECT_THROW(to_analog_status(99), std::out_of_range);
+    EXPECT_THROW({ (void)to_analog_status(99); }, std::out_of_range);
 }
 
 TEST(TestStatus, AnalogStatusToString) {
@@ -150,7 +150,7 @@ TEST(TestStatus, DigitalStatusRoundTrip) {
     EXPECT_EQ(to_digital_status(5), DigitalTestStatus::crc_related_failure);
     EXPECT_EQ(to_digital_status(7), DigitalTestStatus::fatal_error);
     EXPECT_EQ(to_digital_status(8), DigitalTestStatus::chain_integrity_failure);
-    EXPECT_THROW(to_digital_status(42), std::out_of_range);
+    EXPECT_THROW({ (void)to_digital_status(42); }, std::out_of_range);
 }
 
 TEST(TestStatus, DigitalStatusToString) {
@@ -166,7 +166,7 @@ TEST(TestStatus, GenericStatusRoundTrip) {
     EXPECT_EQ(to_generic_status(1),  GenericTestStatus::fail);
     EXPECT_EQ(to_generic_status(7),  GenericTestStatus::fatal_error);
     EXPECT_EQ(to_generic_status(20), GenericTestStatus::learning_passed);
-    EXPECT_THROW(to_generic_status(55), std::out_of_range);
+    EXPECT_THROW({ (void)to_generic_status(55); }, std::out_of_range);
 }
 
 TEST(TestStatus, GenericStatusToString) {
