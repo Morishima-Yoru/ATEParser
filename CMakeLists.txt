@@ -3,8 +3,12 @@ cmake_minimum_required(VERSION 3.21)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(WIN32)
-    set(CMAKE_C_COMPILER   "x86_64-w64-mingw32-gcc.exe")
-    set(CMAKE_CXX_COMPILER "x86_64-w64-mingw32-g++.exe")
+    # Only force the MinGW cross-compiler when the caller has NOT already
+    # specified one via -DCMAKE_CXX_COMPILER=... (e.g., CI or MSYS2 shell).
+    if(NOT DEFINED CACHE{CMAKE_CXX_COMPILER})
+        set(CMAKE_C_COMPILER   "x86_64-w64-mingw32-gcc.exe")
+        set(CMAKE_CXX_COMPILER "x86_64-w64-mingw32-g++.exe")
+    endif()
 
     execute_process(
         COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libstdc++-6.dll
