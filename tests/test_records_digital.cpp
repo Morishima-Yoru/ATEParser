@@ -152,3 +152,40 @@ TEST(TestJetRecord, Parse) {
     EXPECT_EQ(r.pin_count, 12);
     EXPECT_EQ(r.test_designator, "test_x");
 }
+
+TEST(DevicePinRecord, AddNodePin) {
+    records::DevicePinRecord r{};
+    r.add_node_pin("NODE_A", "PIN_1");
+    r.add_node_pin("NODE_B", "PIN_2");
+    ASSERT_EQ(r.node_pin_list.size(), 2u);
+    ASSERT_TRUE(r.node_pin_list[0].is_array());
+    EXPECT_EQ(r.node_pin_list[0][0], "NODE_A");
+    EXPECT_EQ(r.node_pin_list[0][1], "PIN_1");
+    EXPECT_EQ(r.node_pin_list[1][0], "NODE_B");
+    EXPECT_EQ(r.node_pin_list[1][1], "PIN_2");
+}
+
+TEST(ConnectCheckRecord, ParseInvalidStatus) {
+    auto rec = make_record(enums::Prefix::cchk);
+    parse_into(rec, {"99", "4", "DEV_X"});
+    auto& r = std::get<records::ConnectCheckRecord>(rec);
+    EXPECT_EQ(r.test_status, enums::GenericTestStatus::fail);
+    EXPECT_EQ(r.pin_count, 4);
+}
+
+TEST(PolarityCheckRecord, ParseInvalidStatus) {
+    auto rec = make_record(enums::Prefix::pchk);
+    parse_into(rec, {"99", "PCHK_TEST"});
+    auto& r = std::get<records::PolarityCheckRecord>(rec);
+    EXPECT_EQ(r.test_status, enums::GenericTestStatus::fail);
+    EXPECT_EQ(r.test_designator, "PCHK_TEST");
+}
+
+TEST(TestJetRecord, ParseInvalidStatus) {
+    auto rec = make_record(enums::Prefix::tjet);
+    parse_into(rec, {"99", "6", "TJ_TEST"});
+    auto& r = std::get<records::TestJetRecord>(rec);
+    EXPECT_EQ(r.test_status, enums::GenericTestStatus::fail);
+    EXPECT_EQ(r.pin_count, 6);
+    EXPECT_EQ(r.test_designator, "TJ_TEST");
+}

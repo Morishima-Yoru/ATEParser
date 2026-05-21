@@ -1,39 +1,42 @@
 #include "ate_parser/enums/test_status.hpp"
+#include "ate_parser/utils/enum_messages.hpp"
 #include <stdexcept>
+
+namespace em = ate::enum_msg;
 
 namespace ate::enums {
 
 std::string to_string(AnalogTestStatus s) {
     switch (s) {
-        case AnalogTestStatus::passed:                  return "Passed";
-        case AnalogTestStatus::failed:                  return "Failed";
-        case AnalogTestStatus::failed_compliance_limit: return "Failed (Compliance Limit)";
-        case AnalogTestStatus::failed_detector_timeout: return "Failed (Detector Timeout)";
-        case AnalogTestStatus::failed_general:          return "Failed (General)";
-        case AnalogTestStatus::aborted_by_operator:     return "Aborted by Operator";
+        case AnalogTestStatus::passed:                  return std::string{em::k_analog_passed};
+        case AnalogTestStatus::failed:                  return std::string{em::k_analog_failed};
+        case AnalogTestStatus::failed_compliance_limit: return std::string{em::k_analog_failed_compliance};
+        case AnalogTestStatus::failed_detector_timeout: return std::string{em::k_analog_failed_detector};
+        case AnalogTestStatus::failed_general:          return std::string{em::k_analog_failed_general};
+        case AnalogTestStatus::aborted_by_operator:     return std::string{em::k_analog_aborted_operator};
     }
-    return "Unknown Analog Status";
+    return std::string{em::k_analog_unknown};
 }
 
 std::string to_string(DigitalTestStatus s) {
     switch (s) {
-        case DigitalTestStatus::passed:                  return "Passed";
-        case DigitalTestStatus::failed:                  return "Failed";
-        case DigitalTestStatus::crc_related_failure:     return "CRC Failure";
-        case DigitalTestStatus::fatal_error:             return "Fatal Error";
-        case DigitalTestStatus::chain_integrity_failure: return "Chain Integrity Failure";
+        case DigitalTestStatus::passed:                  return std::string{em::k_digital_passed};
+        case DigitalTestStatus::failed:                  return std::string{em::k_digital_failed};
+        case DigitalTestStatus::crc_related_failure:     return std::string{em::k_digital_crc_failure};
+        case DigitalTestStatus::fatal_error:             return std::string{em::k_digital_fatal_error};
+        case DigitalTestStatus::chain_integrity_failure: return std::string{em::k_digital_chain_integrity};
     }
-    return "Unknown Digital Status";
+    return std::string{em::k_digital_unknown};
 }
 
 std::string to_string(GenericTestStatus s) {
     switch (s) {
-        case GenericTestStatus::pass:            return "Pass";
-        case GenericTestStatus::fail:            return "Fail";
-        case GenericTestStatus::fatal_error:     return "Fatal Error";
-        case GenericTestStatus::learning_passed: return "Learning Passed";
+        case GenericTestStatus::pass:            return std::string{em::k_generic_pass};
+        case GenericTestStatus::fail:            return std::string{em::k_generic_fail};
+        case GenericTestStatus::fatal_error:     return std::string{em::k_generic_fatal_error};
+        case GenericTestStatus::learning_passed: return std::string{em::k_generic_learning_passed};
     }
-    return "Unknown Generic Status";
+    return std::string{em::k_generic_unknown};
 }
 
 AnalogTestStatus to_analog_status(int v) {
@@ -44,7 +47,7 @@ AnalogTestStatus to_analog_status(int v) {
         case 3:  return AnalogTestStatus::failed_detector_timeout;
         case 7:  return AnalogTestStatus::failed_general;
         case 11: return AnalogTestStatus::aborted_by_operator;
-        default: throw std::out_of_range("Invalid AnalogTestStatus code: " + std::to_string(v));
+        default: throw std::out_of_range(std::string{em::k_invalid_analog_code} + std::to_string(v));
     }
 }
 
@@ -55,7 +58,7 @@ DigitalTestStatus to_digital_status(int v) {
         case 5: return DigitalTestStatus::crc_related_failure;
         case 7: return DigitalTestStatus::fatal_error;
         case 8: return DigitalTestStatus::chain_integrity_failure;
-        default: throw std::out_of_range("Invalid DigitalTestStatus code: " + std::to_string(v));
+        default: throw std::out_of_range(std::string{em::k_invalid_digital_code} + std::to_string(v));
     }
 }
 
@@ -65,7 +68,7 @@ GenericTestStatus to_generic_status(int v) {
         case 1:  return GenericTestStatus::fail;
         case 7:  return GenericTestStatus::fatal_error;
         case 20: return GenericTestStatus::learning_passed;
-        default: throw std::out_of_range("Invalid GenericTestStatus code: " + std::to_string(v));
+        default: throw std::out_of_range(std::string{em::k_invalid_generic_code} + std::to_string(v));
     }
 }
 

@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "wip" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Windows — MinGW-w64 (mirrors the local dev environment)
+  # ─────────────────────────────────────────────────────────────────────────────
+  build-windows:
+    name: Windows / MinGW-w64 (GCC)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0          # needed for git rev-list --count
+
+      - name: Set up MinGW-w64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ninja
+
+      - name: Configure (Release)
+        shell: msys2 {0}
+        run: |
+          cmake -S . -B build \
+            -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc \
+            -DCMAKE_CXX_COMPILER=g++
+
+      - name: Build
+        shell: msys2 {0}
+        run: cmake --build build --config Release -j$(nproc)
+
+      - name: Run tests (CTest)
+        shell: msys2 {0}
+        run: ctest --test-dir build --output-on-failure -C Release
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Linux — GCC 14 (C++23 full support)
+  # ─────────────────────────────────────────────────────────────────────────────
+  build-linux:
+    name: Linux / GCC-14
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install GCC-14
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y gcc-14 g++-14 cmake ninja-build lcov
+
+      - name: Configure (Release)
+        run: |
+          cmake -S . -B build \
+            -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_COMPILER=gcc-14 \
+            -DCMAKE_CXX_COMPILER=g++-14
+
+      - name: Build
+        run: cmake --build build --config Release -j$(nproc)
+
+      - name: Run tests (CTest)
+        run: ctest --test-dir build --output-on-failure -C Release
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Linux — Coverage (GCC-14, Debug + --coverage)
+  # ─────────────────────────────────────────────────────────────────────────────
+  coverage:
+    name: Linux / Coverage (GCC-14)
+    runs-on: ubuntu-24.04
+    needs: build-linux        # only run if the release build is green
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install GCC-14 + lcov
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y gcc-14 g++-14 cmake ninja-build lcov
+
+      - name: Configure (Debug + coverage)
+        run: |
+          cmake -S . -B build \
+            -G "Ninja" \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DCMAKE_C_COMPILER=gcc-14 \
+            -DCMAKE_CXX_COMPILER=g++-14
+
+      - name: Build
+        run: cmake --build build -j$(nproc)
+
+      - name: Run tests (CTest)
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Collect coverage (lcov)
+        run: |
+          lcov \
+            --capture \
+            --directory build \
+            --output-file coverage.info \
+            --gcov-tool gcov-14 \
+            --ignore-errors mismatch
+          lcov \
+            --remove coverage.info \
+              '*/third_party/*' \
+              '*/build/_deps/*' \
+              '*/tests/*' \
+              '/usr/*' \
+            --output-file coverage_filtered.info \
+            --ignore-errors unused
+          lcov --summary coverage_filtered.info
+
+      - name: Upload coverage report (artifact)
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: coverage_filtered.info
+          retention-days: 14

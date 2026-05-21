@@ -3,8 +3,12 @@ cmake_minimum_required(VERSION 3.21)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(WIN32)
-    set(CMAKE_C_COMPILER   "x86_64-w64-mingw32-gcc.exe")
-    set(CMAKE_CXX_COMPILER "x86_64-w64-mingw32-g++.exe")
+    # Only force the MinGW cross-compiler when the caller has NOT already
+    # specified one via -DCMAKE_CXX_COMPILER=... (e.g., CI or MSYS2 shell).
+    if(NOT DEFINED CACHE{CMAKE_CXX_COMPILER})
+        set(CMAKE_C_COMPILER   "x86_64-w64-mingw32-gcc.exe")
+        set(CMAKE_CXX_COMPILER "x86_64-w64-mingw32-g++.exe")
+    endif()
 
     execute_process(
         COMMAND ${CMAKE_CXX_COMPILER} -print-file-name=libstdc++-6.dll
@@ -38,6 +42,9 @@ set(FETCHCONTENT_QUIET OFF)
 
 set(SPDLOG_FMT_EXTERNAL  OFF CACHE BOOL "" FORCE)
 set(SPDLOG_BUILD_SHARED  OFF CACHE BOOL "" FORCE)
+if(UNIX AND NOT WIN32)
+    set(SPDLOG_BUILD_PIC ON CACHE BOOL "" FORCE)
+endif()
 set(SPDLOG_INSTALL       OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -47,10 +54,15 @@ FetchContent_Declare(spdlog
 
 set(CPPTRACE_STATIC                    ON  CACHE BOOL "" FORCE)
 set(CPPTRACE_BUILD_SHARED              OFF CACHE BOOL "" FORCE)
-set(CPPTRACE_GET_SYMBOLS_WITH_LIBDWARF OFF CACHE BOOL "" FORCE)
 set(CPPTRACE_USE_EXTERNAL_ZSTD         OFF CACHE BOOL "" FORCE)
 set(CPPTRACE_DISABLE_ZSTD_DOWNLOAD     ON  CACHE BOOL "" FORCE)
-set(CPPTRACE_GET_SYMBOLS_WITH_DBGHELP  ON  CACHE BOOL "" FORCE)
+if(WIN32)
+    set(CPPTRACE_GET_SYMBOLS_WITH_LIBDWARF OFF CACHE BOOL "" FORCE)
+    set(CPPTRACE_GET_SYMBOLS_WITH_DBGHELP  ON  CACHE BOOL "" FORCE)
+elseif(UNIX AND NOT APPLE)
+    set(CPPTRACE_GET_SYMBOLS_WITH_LIBDWARF ON  CACHE BOOL "" FORCE)
+    set(CPPTRACE_GET_SYMBOLS_WITH_DBGHELP  OFF CACHE BOOL "" FORCE)
+endif()
 FetchContent_Declare(cpptrace
     GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
     GIT_TAG        v0.7.5
